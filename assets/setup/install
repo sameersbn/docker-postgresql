@@ -1,0 +1,40 @@
+#!/bin/bash
+
+mkdir -p /var/run/sshd
+cat > /etc/supervisor/conf.d/sshd.conf <<EOF
+[program:sshd]
+directory=/
+command=/usr/sbin/sshd -D
+user=root
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/supervisor/%(program_name)s.log
+stderr_logfile=/var/log/supervisor/%(program_name)s_error.log
+EOF
+
+# listen on all interfaces
+cat >> /etc/postgresql/9.1/main/postgresql.conf <<EOF
+listen_addresses = '*'
+EOF
+
+# allow remote connections to postgresql database
+cat >> /etc/postgresql/9.1/main/pg_hba.conf <<EOF
+host    all             all             0.0.0.0/0               md5
+EOF
+
+# remove the default database, will create from init
+rm -rf /var/lib/postgresql/9.1/main
+
+echo ""
+echo "*************************************************************************"
+echo "* Please login to postgresql and create the required database and       *"
+echo "* database user with remote login access so that other containers can   *"
+echo "* use it.                                                               *"
+echo "*                                                                       *"
+echo "* e.g.                                                                  *"
+echo "*   sudo -u postgres createuser db_user                                 *"
+echo "*   sudo -u postgres psql                                               *"
+echo "*   > \password db_user                                                 *"
+echo "*   sudo -u postgres createdb -O db_user db_name                        *"
+echo "*************************************************************************"
+echo ""

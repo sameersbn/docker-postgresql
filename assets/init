@@ -1,0 +1,73 @@
+#!/bin/bash
+
+set -e
+
+# generate a password for root.
+ROOT_PASSWORD=$(pwgen -c -n -1 12)
+echo "root:$ROOT_PASSWORD" | chpasswd
+echo User: root Password: $ROOT_PASSWORD
+
+# start supervisord
+/usr/bin/supervisord
+
+appStart () {
+	# fix permissions and ownership of /var/lib/postgresql
+	chown -R postgres:postgres /var/lib/postgresql
+	chmod 700 /var/lib/postgresql
+
+	# initialize PostgreSQL data directory
+	if [ ! -d /var/lib/postgresql/9.1/main ]; then
+		echo "Initializing database..."
+		PG_PASSWORD=$(pwgen -c -n -1 14)
+		echo "${PG_PASSWORD}" > /var/lib/postgresql/pwfile
+		sudo -u postgres -H /usr/lib/postgresql/9.1/bin/initdb \
+			--pgdata=/var/lib/postgresql/9.1/main --pwfile=/var/lib/postgresql/pwfile \
+			--username=postgres --encoding=unicode --auth=trust >/dev/null
+	fi
+
+	echo "Starting PostgreSQL server..."
+	/etc/init.d/postgresql start
+
+	if [ -f /var/lib/postgresql/pwfile ]; then
+		PG_PASSWORD=$(cat /var/lib/postgresql/pwfile)
+		echo "|------------------------------------------------------------------|"
+		echo "| PostgreSQL User: postgres, Password: ${PG_PASSWORD}              |"
+		echo "|                                                                  |"
+		echo "| To remove the PostgreSQL login credentials from the logs, please |"
+		echo "| make a note of password and then delete the file pwfile          |"
+		echo "| from the data store.                                             |"
+		echo "|------------------------------------------------------------------|"
+	fi
+	tail -F /var/log/postgresql/postgresql-9.1-main.log
+}
+
+appHelp () {
+	echo "Available options:"
+	echo " app:start          - Start the postgresql server and watch the log (default)"
+	echo " app:help           - Displays the help"
+	echo " [command]          - Execute the specified linux command eg. bash."
+}
+
+case "$1" in
+	app:start)
+		appStart
+		;;
+	app:help)
+		appHelp
+		;;
+	*)
+		if [ -x $1 ]; then
+			$1
+		else
+			prog=$(which $1)
+			if [ -n "${prog}" ] ; then
+				shift 1
+				$prog $@
+			else
+				appHelp
+			fi
+		fi
+		;;
+esac
+
+exit 0
