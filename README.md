@@ -7,6 +7,7 @@
     - [Securing the server](#securing-the-server)
 - [Maintenance](#maintenance)
     - [SSH Login](#ssh-login)
+- [Issues](#issues)
 
 # Introduction
 Dockerfile to build a PostgreSQL container image which can be linked to other containers.
@@ -121,3 +122,6 @@ docker pull sameersbn/postgresql:latest
 ```bash
 docker run -name postgresql -d [OPTIONS] sameersbn/postgresql:latest
 ```
+
+# Issues
+Please report issues [here](https://github.com/sameersbn/docker-postgresql/issues)
