@@ -15,13 +15,13 @@ Dockerfile to build a PostgreSQL container image which can be linked to other co
 
 Pull the latest version of the image from the docker index. This is the recommended method of installation as it is easier to update image in the future. These builds are performed by the **Docker Trusted Build** service.
 
-```
+```bash
 docker pull sameersbn/postgresql:latest
 ```
 
 Alternately you can build the image yourself.
 
-```
+```bash
 git clone https://github.com/sameersbn/docker-postgresql.git
 cd docker-postgresql
 docker build -t="$USER/postgresql" .
@@ -30,7 +30,7 @@ docker build -t="$USER/postgresql" .
 # Quick Start
 Run the postgresql image
 
-```
+```bash
 docker run -name postgresql -d sameersbn/postgresql:latest
 POSTGRESQL_IP=$(docker inspect postgresql | grep IPAddres | awk -F'"' '{print $4}')
 ```
@@ -42,7 +42,7 @@ docker logs postgresql
 ```
 
 In the output you will notice the following lines with the password:
-```
+```bash
 |------------------------------------------------------------------|
 | PostgreSQL User: postgres, Password: xxxxxxxxxxxxxx              |
 |                                                                  |
@@ -54,7 +54,7 @@ In the output you will notice the following lines with the password:
 
 To test if the postgresql server is working properly, try connecting to the server.
 
-```
+```bash
 psql -U postgres -h ${POSTGRESQL_IP}
 ```
 
@@ -63,7 +63,7 @@ psql -U postgres -h ${POSTGRESQL_IP}
 ## Data Store
 For data persistence a volume should be mounted at /var/lib/postgresql.
 
-```
+```bash
 mkdir /opt/postgresql/data
 docker run -name postgresql -d \
   -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:latest
@@ -76,14 +76,14 @@ By default a randomly generated password is assigned for the postgres user. The 
 
 If you dont want this password to be displayed in the logs, then please note down the password listed in /opt/postgresql/data/pwpass and then delete the file.
 
-```
+```bash
 cat /opt/postgresql/data/pwfile
 rm /opt/postgresql/data/pwfile
 ```
 
 Alternately, you can change the password of the postgres user
 
-```
+```bash
 psql -U postgres -h ${POSTGRESQL_IP}
 \password postgres
 ```
@@ -95,7 +95,7 @@ There are two methods to gain root login to the container, the first method is t
 
 The second method is use the dynamically generated password. Every time the container is started a random password is generated using the pwgen tool and assigned to the root user. This password can be fetched from the docker logs.
 
-```
+```bash
 docker logs postgresql 2>&1 | grep '^User: ' | tail -n1
 ```
 This password is not persistent and changes every time the image is executed.
@@ -106,18 +106,18 @@ To upgrade to newer releases, simply follow this 3 step upgrade procedure.
 
 - **Step 1**: Stop the currently running image
 
-```
+```bash
 docker stop postgresql
 ```
 
 - **Step 2**: Update the docker image.
 
-```
+```bash
 docker pull sameersbn/postgresql:latest
 ```
 
 - **Step 3**: Start the image
 
-```
+```bash
 docker run -name postgresql -d [OPTIONS] sameersbn/postgresql:latest
 ```
