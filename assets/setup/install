@@ -1,16 +1,5 @@
 #!/bin/bash
-
-mkdir -p /var/run/sshd
-cat > /etc/supervisor/conf.d/sshd.conf <<EOF
-[program:sshd]
-directory=/
-command=/usr/sbin/sshd -D
-user=root
-autostart=true
-autorestart=true
-stdout_logfile=/var/log/supervisor/%(program_name)s.log
-stderr_logfile=/var/log/supervisor/%(program_name)s_error.log
-EOF
+set -e
 
 # listen on all interfaces
 cat >> /etc/postgresql/9.1/main/postgresql.conf <<EOF
