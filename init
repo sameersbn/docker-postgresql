@@ -28,9 +28,6 @@ if [ ! -d /var/lib/postgresql/9.1/main ]; then
 		--username=postgres --encoding=unicode --auth=trust >/dev/null
 fi
 
-echo "Starting PostgreSQL server..."
-/etc/init.d/postgresql start
-
 if [ -f /var/lib/postgresql/pwfile ]; then
 	PG_PASSWORD=$(cat /var/lib/postgresql/pwfile)
 	echo "|------------------------------------------------------------------|"
@@ -42,4 +39,6 @@ if [ -f /var/lib/postgresql/pwfile ]; then
 	echo "|------------------------------------------------------------------|"
 fi
 
+echo "Starting PostgreSQL server..."
+/etc/init.d/postgresql start
 tail -F /var/log/postgresql/postgresql-9.1-main.log
