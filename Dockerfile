@@ -6,11 +6,11 @@ RUN apt-get update && \
 		rm -rf /var/lib/postgresql &&  \
 		apt-get clean # 20140525
 
-ADD assets/ /app/
-RUN chmod 755 /app/init
+ADD init /init
+RUN chmod 755 /init
 
 EXPOSE 5432
 
 VOLUME ["/var/lib/postgresql"]
 
-CMD ["/app/init"]
+CMD ["/init"]
