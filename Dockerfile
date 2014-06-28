@@ -13,5 +13,4 @@ EXPOSE 5432
 
 VOLUME ["/var/lib/postgresql"]
 
-ENTRYPOINT ["/app/init"]
-CMD ["app:start"]
+CMD ["/app/init"]
