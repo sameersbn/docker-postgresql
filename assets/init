@@ -6,6 +6,19 @@ set -e
 chown -R postgres:postgres /var/lib/postgresql
 chmod 700 /var/lib/postgresql
 
+# disable ssl
+sed 's/ssl = true/#ssl = true/' -i /etc/postgresql/9.1/main/postgresql.conf
+
+# listen on all interfaces
+cat >> /etc/postgresql/9.1/main/postgresql.conf <<EOF
+listen_addresses = '*'
+EOF
+
+# allow remote connections to postgresql database
+cat >> /etc/postgresql/9.1/main/pg_hba.conf <<EOF
+host    all             all             0.0.0.0/0               md5
+EOF
+
 # initialize PostgreSQL data directory
 if [ ! -d /var/lib/postgresql/9.1/main ]; then
 	echo "Initializing database..."
