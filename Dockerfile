@@ -9,8 +9,6 @@ ADD assets/ /app/
 RUN chmod 755 /app/init /app/setup/install
 RUN /app/setup/install
 
-ADD authorized_keys /root/.ssh/
-
 EXPOSE 5432
 
 VOLUME ["/var/lib/postgresql"]

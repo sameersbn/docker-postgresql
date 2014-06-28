@@ -5,8 +5,6 @@
 - [Configuration](#configuration)
     - [Data Store](#data-store)
     - [Securing the server](#securing-the-server)
-- [Maintenance](#maintenance)
-    - [SSH Login](#ssh-login)
 - [Issues](#issues)
 
 # Introduction
@@ -88,18 +86,6 @@ Alternately, you can change the password of the postgres user
 psql -U postgres -h ${POSTGRESQL_IP}
 \password postgres
 ```
-
-# Maintenance
-
-## SSH Login
-There are two methods to gain root login to the container, the first method is to add your public rsa key to the authorized_keys file and build the image.
-
-The second method is use the dynamically generated password. Every time the container is started a random password is generated using the pwgen tool and assigned to the root user. This password can be fetched from the docker logs.
-
-```bash
-docker logs postgresql 2>&1 | grep '^User: ' | tail -n1
-```
-This password is not persistent and changes every time the image is executed.
 
 # Upgrading
 
