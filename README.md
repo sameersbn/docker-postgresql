@@ -5,6 +5,7 @@
 - [Configuration](#configuration)
     - [Data Store](#data-store)
     - [Securing the server](#securing-the-server)
+- [Upgrading](#upgrading)
 - [Issues](#issues)
 
 # Introduction
