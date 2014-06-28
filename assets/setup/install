@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# make sure ssl is disabled
+sed 's/ssl = true/#ssl = true/' -i /etc/postgresql/9.1/main/postgresql.conf
+
 # listen on all interfaces
 cat >> /etc/postgresql/9.1/main/postgresql.conf <<EOF
 listen_addresses = '*'
