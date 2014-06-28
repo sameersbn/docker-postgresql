@@ -2,9 +2,6 @@
 
 set -e
 
-# start supervisord
-/usr/bin/supervisord
-
 appStart () {
 	# fix permissions and ownership of /var/lib/postgresql
 	chown -R postgres:postgres /var/lib/postgresql
