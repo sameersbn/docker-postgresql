@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # fix permissions and ownership of /var/lib/postgresql

@@ -10,7 +10,5 @@ ADD init /init
 RUN chmod 755 /init
 
 EXPOSE 5432
-
 VOLUME ["/var/lib/postgresql"]
-
 CMD ["/init"]
