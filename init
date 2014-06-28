@@ -40,5 +40,4 @@ if [ -f /var/lib/postgresql/pwfile ]; then
 fi
 
 echo "Starting PostgreSQL server..."
-/etc/init.d/postgresql start
-tail -F /var/log/postgresql/postgresql-9.1-main.log
+/etc/init.d/postgresql start && tail -F /var/log/postgresql/postgresql-9.1-main.log
