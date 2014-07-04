@@ -6,9 +6,9 @@ RUN apt-get update && \
 		rm -rf /var/lib/postgresql &&  \
 		apt-get clean # 20140525
 
-ADD init /init
-RUN chmod 755 /init
+ADD start /start
+RUN chmod 755 /start
 
 EXPOSE 5432
 VOLUME ["/var/lib/postgresql"]
-CMD ["/init"]
+CMD ["/start"]
