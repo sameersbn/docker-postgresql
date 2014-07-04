@@ -39,4 +39,7 @@ if [ -f /var/lib/postgresql/pwfile ]; then
 	echo "|------------------------------------------------------------------|"
 fi
 
-/etc/init.d/postgresql start && tail -F /var/log/postgresql/postgresql-9.1-main.log
+echo "Starting PostgreSQL server..."
+sudo -u postgres -H /usr/lib/postgresql/9.1/bin/postgres \
+	-D /var/lib/postgresql/9.1/main \
+	-c config_file=/etc/postgresql/9.1/main/postgresql.conf
