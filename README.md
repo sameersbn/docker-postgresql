@@ -32,7 +32,6 @@ Run the postgresql image
 
 ```bash
 docker run -name postgresql -d sameersbn/postgresql:latest
-POSTGRESQL_IP=$(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 ```
 
 By default remote logins are permitted to the postgresql server and a random password is assigned for the postgres user. The password set for the postgres user can be retrieved from the container logs.
@@ -55,7 +54,7 @@ In the output you will notice the following lines with the password:
 To test if the postgresql server is working properly, try connecting to the server.
 
 ```bash
-psql -U postgres -h ${POSTGRESQL_IP}
+psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 ```
 
 # Configuration
@@ -84,7 +83,7 @@ rm /opt/postgresql/data/pwfile
 Alternately, you can change the password of the postgres user
 
 ```bash
-psql -U postgres -h ${POSTGRESQL_IP}
+psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 \password postgres
 ```
 
