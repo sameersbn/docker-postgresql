@@ -31,7 +31,7 @@ docker build -t="$USER/postgresql" .
 Run the postgresql image
 
 ```bash
-docker run -name postgresql -d sameersbn/postgresql:latest
+docker run --name postgresql -d sameersbn/postgresql:latest
 ```
 
 By default remote logins are permitted to the postgresql server and a random password is assigned for the postgres user. The password set for the postgres user can be retrieved from the container logs.
@@ -64,7 +64,7 @@ For data persistence a volume should be mounted at /var/lib/postgresql.
 
 ```bash
 mkdir /opt/postgresql/data
-docker run -name postgresql -d \
+docker run --name postgresql -d \
   -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:latest
 ```
 
@@ -106,7 +106,7 @@ docker pull sameersbn/postgresql:latest
 - **Step 3**: Start the image
 
 ```bash
-docker run -name postgresql -d [OPTIONS] sameersbn/postgresql:latest
+docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:latest
 ```
 
 # Issues
