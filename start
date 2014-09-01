@@ -1,30 +1,35 @@
 #!/bin/bash
 set -e
 
+PG_VERSION="9.1"
+PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
+PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
+PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
+
 # fix permissions and ownership of /var/lib/postgresql
 chown -R postgres:postgres /var/lib/postgresql
 chmod 700 /var/lib/postgresql
 
 # disable ssl
-sed 's/ssl = true/#ssl = true/' -i /etc/postgresql/9.1/main/postgresql.conf
+sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf
 
 # listen on all interfaces
-cat >> /etc/postgresql/9.1/main/postgresql.conf <<EOF
+cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
 listen_addresses = '*'
 EOF
 
 # allow remote connections to postgresql database
-cat >> /etc/postgresql/9.1/main/pg_hba.conf <<EOF
+cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
 host    all             all             0.0.0.0/0               md5
 EOF
 
 # initialize PostgreSQL data directory
-if [ ! -d /var/lib/postgresql/9.1/main ]; then
+if [ ! -d ${PG_DATADIR} ]; then
   echo "Initializing database..."
   PG_PASSWORD=$(pwgen -c -n -1 14)
   echo "${PG_PASSWORD}" > /var/lib/postgresql/pwfile
-  sudo -u postgres -H /usr/lib/postgresql/9.1/bin/initdb \
-    --pgdata=/var/lib/postgresql/9.1/main --pwfile=/var/lib/postgresql/pwfile \
+  sudo -u postgres -H "${PG_BINDIR}/initdb" \
+    --pgdata="${PG_DATADIR}" --pwfile=/var/lib/postgresql/pwfile \
     --username=postgres --encoding=unicode --auth=trust >/dev/null
 fi
 
@@ -40,6 +45,5 @@ if [ -f /var/lib/postgresql/pwfile ]; then
 fi
 
 echo "Starting PostgreSQL server..."
-exec sudo -u postgres -H /usr/lib/postgresql/9.1/bin/postgres \
-  -D /var/lib/postgresql/9.1/main \
-  -c config_file=/etc/postgresql/9.1/main/postgresql.conf
+exec sudo -u postgres -H ${PG_BINDIR}/postgres \
+  -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf
