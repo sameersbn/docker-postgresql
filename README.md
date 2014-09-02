@@ -96,8 +96,16 @@ psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} pos
 
 For data persistence a volume should be mounted at `/var/lib/postgresql`.
 
+SELinux users are also required to change the security context of the mount point so that it plays nicely with selinux.
+
 ```bash
-mkdir /opt/postgresql/data
+mkdir -p /opt/postgresql/data
+sudo chcon -Rt svirt_sandbox_file_t /opt/postgresql/data
+```
+
+The updated run command looks like this.
+
+```bash
 docker run --name postgresql -d \
   -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:latest
 ```
