@@ -5,6 +5,7 @@
 - [Configuration](#configuration)
     - [Data Store](#data-store)
     - [Securing the server](#securing-the-server)
+- [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
 - [Issues](#issues)
 
@@ -86,6 +87,28 @@ Alternately, you can change the password of the postgres user
 psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 \password postgres
 ```
+
+# Shell Access
+
+For debugging and maintenance purposes you may want access the container shell. Since the container does not allow interactive login over the SSH protocol, you can use the [nsenter](http://man7.org/linux/man-pages/man1/nsenter.1.html) linux tool (part of the util-linux package) to access the container shell.
+
+Some linux distros (e.g. ubuntu) use older versions of the util-linux which do not include the `nsenter` tool. To get around this @jpetazzo has created a nice docker image that allows you to install the `nsenter` utility and a helper script named `docker-enter` on these distros.
+
+To install the nsenter tool on your host execute the following command.
+
+```bash
+docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
+```
+
+Now you can access the container shell using the command
+
+```bash
+sudo docker-enter postgresql
+```
+
+For more information refer https://github.com/jpetazzo/nsenter
+
+Another tool named `nsinit` can also be used for the same purpose. Please refer https://jpetazzo.github.io/2014/03/23/lxc-attach-nsinit-nsenter-docker-0-9/ for more information.
 
 # Upgrading
 
