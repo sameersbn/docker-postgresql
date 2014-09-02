@@ -1,4 +1,5 @@
 # Table of Contents
+
 - [Introduction](#introduction)
 - [Reporting Issues](#reporting-issues)
 - [Installation](#installation)
@@ -10,6 +11,7 @@
 - [Upgrading](#upgrading)
 
 # Introduction
+
 Dockerfile to build a PostgreSQL container image which can be linked to other containers.
 
 # Reporting Issues
@@ -57,19 +59,21 @@ docker build -t="$USER/postgresql" .
 ```
 
 # Quick Start
+
 Run the postgresql image
 
 ```bash
 docker run --name postgresql -d sameersbn/postgresql:latest
 ```
 
-By default remote logins are permitted to the postgresql server and a random password is assigned for the postgres user. The password set for the postgres user can be retrieved from the container logs.
+By default remote logins are permitted to the postgresql server and a random password is assigned for the postgres user. The password set for the `postgres` user can be retrieved from the container logs.
 
 ```bash
 docker logs postgresql
 ```
 
 In the output you will notice the following lines with the password:
+
 ```bash
 |------------------------------------------------------------------|
 | PostgreSQL User: postgres, Password: xxxxxxxxxxxxxx              |
@@ -89,7 +93,8 @@ psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} pos
 # Configuration
 
 ## Data Store
-For data persistence a volume should be mounted at /var/lib/postgresql.
+
+For data persistence a volume should be mounted at `/var/lib/postgresql`.
 
 ```bash
 mkdir /opt/postgresql/data
@@ -100,9 +105,10 @@ docker run --name postgresql -d \
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
 ## Securing the server
-By default a randomly generated password is assigned for the postgres user. The password is stored in a file named pwpass in the data store and is printed in the logs.
 
-If you dont want this password to be displayed in the logs, then please note down the password listed in /opt/postgresql/data/pwpass and then delete the file.
+By default a randomly generated password is assigned for the postgres user. The password is stored in a file named `pwpass` in the data store and is printed in the logs.
+
+If you dont want this password to be displayed in the logs, then please note down the password listed in `/opt/postgresql/data/pwpass` and then delete the file.
 
 ```bash
 cat /opt/postgresql/data/pwfile
