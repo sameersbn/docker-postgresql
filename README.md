@@ -1,6 +1,7 @@
 # Table of Contents
 
 - [Introduction](#introduction)
+- [Changelog](Changelog.md)
 - [Reporting Issues](#reporting-issues)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
