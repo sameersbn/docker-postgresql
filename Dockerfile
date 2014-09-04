@@ -1,10 +1,10 @@
 FROM sameersbn/ubuntu:12.04.20140818
 MAINTAINER sameer@damagehead.com
 
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends postgresql postgresql-client && \
-    rm -rf /var/lib/postgresql &&  \
-    rm -rf /var/lib/apt/lists/* # 20140818
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends postgresql postgresql-client \
+ && rm -rf /var/lib/postgresql \
+ && rm -rf /var/lib/apt/lists/* # 20140818
 
 ADD start /start
 RUN chmod 755 /start
