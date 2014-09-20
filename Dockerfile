@@ -12,6 +12,6 @@ RUN chmod 755 /start
 EXPOSE 5432
 
 VOLUME ["/var/lib/postgresql"]
-VOLUME ["/var/run/postgresql"]
+VOLUME ["/run/postgresql"]
 
 CMD ["/start"]
