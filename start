@@ -10,10 +10,10 @@ PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
 chown -R postgres:postgres /var/lib/postgresql
 chmod 700 /var/lib/postgresql
 
-# fix permissions and ownership of /var/run/postgresql
-chown -R postgres:postgres /var/run/postgresql
-chmod 775 /var/run/postgresql
-chmod g+s /var/run/postgresql
+# fix permissions and ownership of /run/postgresql
+chown -R postgres:postgres /run/postgresql
+chmod 775 /run/postgresql
+chmod g+s /run/postgresql
 
 # disable ssl
 sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf
