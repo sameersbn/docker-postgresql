@@ -11,8 +11,8 @@ chown -R postgres:postgres /var/lib/postgresql
 chmod 700 /var/lib/postgresql
 
 # fix permissions and ownership of /run/postgresql
+mkdir -p -m 0755 /run/postgresql
 chown -R postgres:postgres /run/postgresql
-chmod 775 /run/postgresql
 chmod g+s /run/postgresql
 
 # disable ssl
