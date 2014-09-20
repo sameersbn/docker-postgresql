@@ -7,8 +7,8 @@ PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
 
 # fix permissions and ownership of /var/lib/postgresql
+mkdir -p -m 0700 /var/lib/postgresql
 chown -R postgres:postgres /var/lib/postgresql
-chmod 700 /var/lib/postgresql
 
 # fix permissions and ownership of /run/postgresql
 mkdir -p -m 0755 /run/postgresql
