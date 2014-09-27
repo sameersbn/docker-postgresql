@@ -6,6 +6,10 @@ PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
 PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
 
+DB_NAME=${DB_NAME:-}
+DB_USER=${DB_USER:-}
+DB_PASS=${DB_PASS:-}
+
 # fix permissions and ownership of /var/lib/postgresql
 mkdir -p -m 0700 /var/lib/postgresql
 chown -R postgres:postgres /var/lib/postgresql
@@ -47,6 +51,35 @@ if [ -f /var/lib/postgresql/pwfile ]; then
   echo "| make a note of password and then delete the file pwfile          |"
   echo "| from the data store.                                             |"
   echo "|------------------------------------------------------------------|"
+fi
+
+if [ -n "${DB_USER}" ]; then
+  if [ -z "${DB_PASS}" ]; then
+    echo ""
+    echo "WARNING: "
+    echo "  Please specify a password for \"${DB_USER}\". Skipping user creation..."
+    echo ""
+    DB_USER=
+  else
+    echo "Creating user \"${DB_USER}\"..."
+    echo "CREATE ROLE ${DB_USER} with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
+      sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+  fi
+fi
+
+if [ -n "${DB_NAME}" ]; then
+  echo "Creating database \"${DB_NAME}\"..."
+  echo "CREATE DATABASE ${DB_NAME};" | \
+    sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+      -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+
+  if [ -n "${DB_USER}" ]; then
+    echo "Granting access to database \"${DB_NAME}\" for user \"${DB_USER}\"..."
+    echo "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} to ${DB_USER};" |
+      sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+  fi
 fi
 
 echo "Starting PostgreSQL server..."

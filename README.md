@@ -5,6 +5,7 @@
 - [Reporting Issues](#reporting-issues)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Creating User and Database at Launch](creating-user-and-database-at-launch)
 - [Configuration](#configuration)
     - [Data Store](#data-store)
     - [Securing the server](#securing-the-server)
@@ -90,6 +91,41 @@ To test if the postgresql server is working properly, try connecting to the serv
 ```bash
 psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 ```
+
+# Creating User and Database at Launch
+
+The image allows you to create a user and database at launch time.
+
+To create a new user you should specify the `DB_USER` and `DB_PASS` variables. The following command will create a new user *dbuser* with the password *dbpass*.
+
+```bash
+docker run --name postgresql -d \
+  -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
+  sameersbn/postgresql:latest
+```
+
+**NOTE**
+- If the password is not specified the user will not be created
+- If the user user already exists no changes will be made
+
+Similarly, you can also create a new database by specifying the database name in the `DB_NAME` variable.
+
+```bash
+docker run --name postgresql -d \
+  -e 'DB_NAME=dbname' sameersbn/postgresql:latest
+```
+
+If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database.
+
+For example,
+
+```bash
+docker run --name postgresql -d \
+  -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' -e 'DB_NAME=dbname' \
+  sameersbn/postgresql:latest
+```
+
+, will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
 
 # Configuration
 
