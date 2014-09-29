@@ -68,7 +68,14 @@ Run the postgresql image
 docker run --name postgresql -d sameersbn/postgresql:latest
 ```
 
-By default remote logins are permitted to the postgresql server and a random password is assigned for the postgres user. The password set for the `postgres` user can be retrieved from the container logs.
+The simplest way to login to the postgresql container as the administrative `postgres` is to use the `--volumes-from` docker option to connect to the postgresql server over the unix socket.
+
+```bash
+docker run -it --rm --volumes-from=postgresql \
+  sameersbn/postgresql sudo -u postgres -H psql
+```
+
+Alternately you can fetch the password set for the `postgres` user from the container logs.
 
 ```bash
 docker logs postgresql
