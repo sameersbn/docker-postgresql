@@ -68,7 +68,7 @@ Run the postgresql image
 docker run --name postgresql -d sameersbn/postgresql:latest
 ```
 
-The simplest way to login to the postgresql container as the administrative `postgres` is to use the `--volumes-from` docker option to connect to the postgresql server over the unix socket.
+The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `--volumes-from` docker option to connect to the postgresql server over the unix socket.
 
 ```bash
 docker run -it --rm --volumes-from=postgresql \
