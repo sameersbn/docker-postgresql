@@ -2,7 +2,7 @@ FROM sameersbn/ubuntu:12.04.20140818
 MAINTAINER sameer@damagehead.com
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends postgresql postgresql-client \
+ && apt-get install -y --no-install-recommends postgresql postgresql-client pwgen \
  && rm -rf /var/lib/postgresql \
  && rm -rf /var/lib/apt/lists/* # 20140818
 
