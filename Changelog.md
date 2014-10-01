@@ -1,6 +1,7 @@
 # Changelog
 
 **latest**
+- upgrade to sameersbn/ubuntu:20141001, fixes shellshock
 - mount volume at `/var/run/postgresql` allowing the postgresql unix socket to be exposed
 
 **9.1**
