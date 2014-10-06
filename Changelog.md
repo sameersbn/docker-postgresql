@@ -1,7 +1,8 @@
 # Changelog
 
-**latest**
+**9.1-1**
 - upgrade to sameersbn/ubuntu:20141001, fixes shellshock
+- support creation of users and databases at launch (`docker run`)
 - mount volume at `/var/run/postgresql` allowing the postgresql unix socket to be exposed
 
 **9.1**
