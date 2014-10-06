@@ -49,7 +49,7 @@ In your issue report please make sure you provide the following information:
 Pull the latest version of the image from the docker index. This is the recommended method of installation as it is easier to update image in the future. These builds are performed by the **Docker Trusted Build** service.
 
 ```bash
-docker pull sameersbn/postgresql:latest
+docker pull sameersbn/postgresql:9.1-1
 ```
 
 Alternately you can build the image yourself.
@@ -65,7 +65,7 @@ docker build -t="$USER/postgresql" .
 Run the postgresql image
 
 ```bash
-docker run --name postgresql -d sameersbn/postgresql:latest
+docker run --name postgresql -d sameersbn/postgresql:9.1-1
 ```
 
 The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `--volumes-from` docker option to connect to the postgresql server over the unix socket.
@@ -108,7 +108,7 @@ To create a new user you should specify the `DB_USER` and `DB_PASS` variables. T
 ```bash
 docker run --name postgresql -d \
   -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
-  sameersbn/postgresql:latest
+  sameersbn/postgresql:9.1-1
 ```
 
 **NOTE**
@@ -119,7 +119,7 @@ Similarly, you can also create a new database by specifying the database name in
 
 ```bash
 docker run --name postgresql -d \
-  -e 'DB_NAME=dbname' sameersbn/postgresql:latest
+  -e 'DB_NAME=dbname' sameersbn/postgresql:9.1-1
 ```
 
 If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database.
@@ -129,7 +129,7 @@ For example,
 ```bash
 docker run --name postgresql -d \
   -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' -e 'DB_NAME=dbname' \
-  sameersbn/postgresql:latest
+  sameersbn/postgresql:9.1-1
 ```
 
 , will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
@@ -151,7 +151,7 @@ The updated run command looks like this.
 
 ```bash
 docker run --name postgresql -d \
-  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:latest
+  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:9.1-1
 ```
 
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
@@ -209,11 +209,11 @@ docker stop postgresql
 - **Step 2**: Update the docker image.
 
 ```bash
-docker pull sameersbn/postgresql:latest
+docker pull sameersbn/postgresql:9.1-1
 ```
 
 - **Step 3**: Start the image
 
 ```bash
-docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:latest
+docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.1-1
 ```
