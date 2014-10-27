@@ -81,7 +81,7 @@ The simplest way to login to the postgresql container as the administrative `pos
 
 ```bash
 docker run -it --rm --volumes-from=postgresql \
-  sameersbn/postgresql sudo -u postgres -H psql
+  sameersbn/postgresql:9.1-1 sudo -u postgres -H psql
 ```
 
 Alternately you can fetch the password set for the `postgres` user from the container logs.
