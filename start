@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-PG_VERSION="9.1"
+PG_VERSION="9.3"
 PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
 PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
