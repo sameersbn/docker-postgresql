@@ -167,9 +167,9 @@ This will make sure that the data stored in the database is not lost when the im
 
 ## Securing the server
 
-By default a randomly generated password is assigned for the postgres user. The password is stored in a file named `pwpass` in the data store and is printed in the logs.
+By default a randomly generated password is assigned for the postgres user. The password is stored in a file named `pwfile` in the data store and is printed in the logs.
 
-If you dont want this password to be displayed in the logs, then please note down the password listed in `/opt/postgresql/data/pwpass` and then delete the file.
+If you dont want this password to be displayed in the logs, then please note down the password listed in `/opt/postgresql/data/pwfile` and then delete the file.
 
 ```bash
 cat /opt/postgresql/data/pwfile
