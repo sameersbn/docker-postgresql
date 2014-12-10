@@ -1,5 +1,8 @@
 # Changelog
 
+**9.3**
+- upgrade to sameersbn/ubuntu:14.04.20141026
+
 **9.1-1**
 - upgrade to sameersbn/ubuntu:20141001, fixes shellshock
 - support creation of users and databases at launch (`docker run`)
