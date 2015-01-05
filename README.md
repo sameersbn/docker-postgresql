@@ -131,7 +131,14 @@ docker run --name postgresql -d \
   -e 'DB_NAME=dbname' sameersbn/postgresql:9.1-1
 ```
 
-If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database.
+You may also specify a comma separated list of database names in the `DB_NAME` variable. The following command creates two new databases named *dbname1* and *dbname2 (p.s. this feature is only available in releases greater than 9.1-1)*
+
+```bash
+docker run --name postgresql -d \
+-e 'DB_NAME=dbname1,dbname2' sameersbn/postgresql:latest
+```
+
+If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database(s).
 
 For example,
 
