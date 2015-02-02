@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- use the official postgresql apt repo
+
 **9.1-1**
 - upgrade to sameersbn/ubuntu:20141001, fixes shellshock
 - support creation of users and databases at launch (`docker run`)
