@@ -1,8 +1,8 @@
-FROM sameersbn/ubuntu:12.04.20150120
+FROM sameersbn/ubuntu:14.04.20150120
 MAINTAINER sameer@damagehead.com
 
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
- && echo 'deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
+ && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
  && apt-get install -y postgresql-9.1 postgresql-client-9.1 pwgen \
  && rm -rf /var/lib/postgresql \
