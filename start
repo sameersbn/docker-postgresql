@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
+PG_HOME="/var/lib/postgresql"
 PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
 PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
-PG_DATADIR="/var/lib/postgresql/${PG_VERSION}/main"
+PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
 
-# fix permissions and ownership of /var/lib/postgresql
-mkdir -p -m 0700 /var/lib/postgresql
-chown -R postgres:postgres /var/lib/postgresql
+# fix permissions and ownership of ${PG_HOME}
+mkdir -p -m 0700 ${PG_HOME}
+chown -R postgres:postgres ${PG_HOME}
 
 # fix permissions and ownership of /run/postgresql
 mkdir -p -m 0755 /run/postgresql /run/postgresql/${PG_VERSION}-main.pg_stat_tmp
@@ -35,14 +36,14 @@ EOF
 if [ ! -d ${PG_DATADIR} ]; then
   echo "Initializing database..."
   PG_PASSWORD=$(pwgen -c -n -1 14)
-  echo "${PG_PASSWORD}" > /var/lib/postgresql/pwfile
+  echo "${PG_PASSWORD}" > ${PG_HOME}/pwfile
   sudo -u postgres -H "${PG_BINDIR}/initdb" \
-    --pgdata="${PG_DATADIR}" --pwfile=/var/lib/postgresql/pwfile \
+    --pgdata="${PG_DATADIR}" --pwfile=${PG_HOME}/pwfile \
     --username=postgres --encoding=unicode --auth=trust >/dev/null
 fi
 
-if [ -f /var/lib/postgresql/pwfile ]; then
-  PG_PASSWORD=$(cat /var/lib/postgresql/pwfile)
+if [ -f ${PG_HOME}/pwfile ]; then
+  PG_PASSWORD=$(cat ${PG_HOME}/pwfile)
   echo "|------------------------------------------------------------------|"
   echo "| PostgreSQL User: postgres, Password: ${PG_PASSWORD}              |"
   echo "|                                                                  |"
