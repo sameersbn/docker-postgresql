@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- postgresql: upgrade to 9.4
+
 **9.1-2**
 - use the official postgresql apt repo
 - feature: automatic data migration on upgrade
