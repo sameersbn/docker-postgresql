@@ -97,7 +97,7 @@ if [ -n "${DB_USER}" ]; then
     echo "Creating user \"${DB_USER}\"..."
     echo "CREATE ROLE ${DB_USER} with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
       sudo -u postgres -H ${PG_BINDIR}/postgres --single \
-        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
   fi
 fi
 
@@ -106,13 +106,13 @@ if [ -n "${DB_NAME}" ]; then
     echo "Creating database \"${db}\"..."
     echo "CREATE DATABASE ${db};" | \
       sudo -u postgres -H ${PG_BINDIR}/postgres --single \
-        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+        -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
 
     if [ -n "${DB_USER}" ]; then
       echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
       echo "GRANT ALL PRIVILEGES ON DATABASE ${db} to ${DB_USER};" |
         sudo -u postgres -H ${PG_BINDIR}/postgres --single \
-          -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null 2>&1
+          -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
   done
 fi
