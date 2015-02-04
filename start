@@ -36,6 +36,9 @@ cd ${PG_HOME}
 
 # initialize PostgreSQL data directory
 if [ ! -d ${PG_DATADIR} ]; then
+  # check if we need to perform data migration
+  PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION | sort -r | head -n1 | cut -d'/' -f5)
+
   if [ ! -f "${PG_HOME}/pwfile" ]; then
     PG_PASSWORD=$(pwgen -c -n -1 14)
     echo "${PG_PASSWORD}" > ${PG_HOME}/pwfile
@@ -45,6 +48,31 @@ if [ ! -d ${PG_DATADIR} ]; then
   sudo -u postgres -H "${PG_BINDIR}/initdb" \
     --pgdata="${PG_DATADIR}" --pwfile=${PG_HOME}/pwfile \
     --username=postgres --encoding=unicode --auth=trust >/dev/null
+fi
+
+if [ -n "${PG_OLD_VERSION}" ]; then
+  echo "Migrating postgresql ${PG_OLD_VERSION} data..."
+  PG_OLD_CONFDIR="/etc/postgresql/${PG_OLD_VERSION}/main"
+  PG_OLD_BINDIR="/usr/lib/postgresql/${PG_OLD_VERSION}/bin"
+  PG_OLD_DATADIR="${PG_HOME}/${PG_OLD_VERSION}/main"
+
+  # backup ${PG_OLD_DATADIR} to avoid data loss
+  PG_BKP_SUFFIX=$(date +%Y%m%d%H%M%S)
+  echo "Backing up ${PG_OLD_DATADIR} to ${PG_OLD_DATADIR}.${PG_BKP_SUFFIX}..."
+  cp -a ${PG_OLD_DATADIR} ${PG_OLD_DATADIR}.${PG_BKP_SUFFIX}
+
+  echo "Installing postgresql-${PG_OLD_VERSION}..."
+  apt-get update
+  apt-get install postgresql-${PG_OLD_VERSION} postgresql-client-${PG_OLD_VERSION}
+  rm -rf /var/lib/apt/lists/*
+
+  # migrate ${PG_OLD_VERSION} data
+  echo "Migration in progress. This could take a while, please be patient..."
+  sudo -u postgres -H ${PG_BINDIR}/pg_upgrade \
+    -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
+    -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
+    -o "-c config_file=${PG_OLD_CONFDIR}/postgresql.conf" \
+    -O "-c config_file=${PG_CONFDIR}/postgresql.conf" >/dev/null
 fi
 
 if [ -f ${PG_HOME}/pwfile ]; then

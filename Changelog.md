@@ -2,6 +2,7 @@
 
 **latest**
 - use the official postgresql apt repo
+- feature: automatic data migration on upgrade
 
 **9.1-1**
 - upgrade to sameersbn/ubuntu:20141001, fixes shellshock
