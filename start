@@ -32,11 +32,16 @@ cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
 host    all             all             0.0.0.0/0               md5
 EOF
 
+cd ${PG_HOME}
+
 # initialize PostgreSQL data directory
 if [ ! -d ${PG_DATADIR} ]; then
+  if [ ! -f "${PG_HOME}/pwfile" ]; then
+    PG_PASSWORD=$(pwgen -c -n -1 14)
+    echo "${PG_PASSWORD}" > ${PG_HOME}/pwfile
+  fi
+
   echo "Initializing database..."
-  PG_PASSWORD=$(pwgen -c -n -1 14)
-  echo "${PG_PASSWORD}" > ${PG_HOME}/pwfile
   sudo -u postgres -H "${PG_BINDIR}/initdb" \
     --pgdata="${PG_DATADIR}" --pwfile=${PG_HOME}/pwfile \
     --username=postgres --encoding=unicode --auth=trust >/dev/null
