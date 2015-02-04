@@ -37,7 +37,7 @@ cd ${PG_HOME}
 # initialize PostgreSQL data directory
 if [ ! -d ${PG_DATADIR} ]; then
   # check if we need to perform data migration
-  PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION | sort -r | head -n1 | cut -d'/' -f5)
+  PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
 
   if [ ! -f "${PG_HOME}/pwfile" ]; then
     PG_PASSWORD=$(pwgen -c -n -1 14)
