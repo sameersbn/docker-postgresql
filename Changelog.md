@@ -1,6 +1,6 @@
 # Changelog
 
-**latest**
+**9.4**
 - postgresql: upgrade to 9.4
 
 **9.1-2**
