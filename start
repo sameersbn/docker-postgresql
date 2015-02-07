@@ -9,7 +9,7 @@ PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 # set this env variable to Y to enable a line in the
 # pg_hba.conf file to trust samenet.  this can be used to connect
 # from other containers on the same host without authentication
-PSQL_TRUST_LOCALNET="N"
+PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:N}
 
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
