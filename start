@@ -6,6 +6,11 @@ PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
 PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 
+# set this env variable to Y to enable a line in the
+# pg_hba.conf file to trust samenet.  this can be used to connect
+# from other containers on the same host without authentication
+PSQL_TRUST_LOCALNET="N"
+
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
@@ -27,9 +32,14 @@ cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
 listen_addresses = '*'
 EOF
 
+trust_local="host    all             all             samenet                 trust"
+if [ ${PSQL_TRUST_LOCALNET} = "Y" ]; then
+  echo "Enabling trust samenet in pg_hba.conf..."
+  echo ${trust_local} >> ${PG_CONFDIR}/pg_hba.conf
+fi
+
 # allow remote connections to postgresql database
 cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
-host    all             all             samenet                 trust
 host    all             all             0.0.0.0/0               md5
 EOF
 
