@@ -150,6 +150,23 @@ docker run --name postgresql -d \
 
 , will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
 
+The PSQL_TRUST_LOCALNET environment variable can be used to configure postgres to trust connections on the same network.  This
+is handy for other containers to connect without authentication. To enable this behavior, set PSQL_TRUST_LOCALNET to Y.
+
+For example,
+
+```bash
+docker run --name postgresql -d \
+  -e 'PSQL_TRUST_LOCALNET=Y' \
+  sameersbn/postgresql:9.4
+```
+
+This has the effect of adding the following to the pg_hba.conf file:
+
+```
+host    all             all             samenet                 trust
+```
+
 # Configuration
 
 ## Data Store
