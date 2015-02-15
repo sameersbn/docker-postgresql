@@ -32,7 +32,7 @@ cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
 listen_addresses = '*'
 EOF
 
-if [ ${PSQL_TRUST_LOCALNET} = "true" ]; then
+if [ "${PSQL_TRUST_LOCALNET}" == "true" ]; then
   echo "Enabling trust samenet in pg_hba.conf..."
   cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
 host    all             all             samenet                 trust
