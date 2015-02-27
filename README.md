@@ -188,6 +188,18 @@ docker run --name postgresql -d \
 
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
+## Enable Unaccent (Search plain text with accent)
+
+Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search.
+
+By default unaccent is configure to `false`
+
+```bash
+docker run --name postgresql -d \
+  -e 'DB_UNACCENT=true' \
+  sameersbn/postgresql:9.4
+```
+
 ## Securing the server
 
 By default a randomly generated password is assigned for the postgres user. The password is stored in a file named `pwfile` in the data store and is printed in the logs.
