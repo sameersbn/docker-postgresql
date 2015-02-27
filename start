@@ -14,6 +14,7 @@ PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:false}
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
+DB_UNACCENT=${DB_UNACCENT:false}
 
 # fix permissions and ownership of ${PG_HOME}
 mkdir -p -m 0700 ${PG_HOME}
@@ -119,6 +120,13 @@ if [ -n "${DB_NAME}" ]; then
     echo "CREATE DATABASE ${db};" | \
       sudo -u postgres -H ${PG_BINDIR}/postgres --single \
         -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
+
+    if [ "${DB_UNACCENT}" == "true" ]; then
+      echo "Installing unaccent extension..."
+      echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
+        sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+          -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
+    fi
 
     if [ -n "${DB_USER}" ]; then
       echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
