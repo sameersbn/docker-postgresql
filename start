@@ -124,7 +124,7 @@ if [ -n "${DB_NAME}" ]; then
     if [ "${DB_UNACCENT}" == "true" ]; then
       echo "Installing unaccent extension..."
       echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
-        sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        sudo -u postgres -H ${PG_BINDIR}/postgres --single ${db} \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
 
