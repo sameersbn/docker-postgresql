@@ -9,7 +9,6 @@
 - [Creating User and Database at Launch](creating-user-and-database-at-launch)
 - [Configuration](#configuration)
     - [Data Store](#data-store)
-    - [Securing the server](#securing-the-server)
 - [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
 
@@ -82,30 +81,6 @@ The simplest way to login to the postgresql container as the administrative `pos
 ```bash
 docker run -it --rm --volumes-from=postgresql \
   sameersbn/postgresql:9.4 sudo -u postgres -H psql
-```
-
-Alternately you can fetch the password set for the `postgres` user from the container logs.
-
-```bash
-docker logs postgresql
-```
-
-In the output you will notice the following lines with the password:
-
-```bash
-|------------------------------------------------------------------|
-| PostgreSQL User: postgres, Password: xxxxxxxxxxxxxx              |
-|                                                                  |
-| To remove the PostgreSQL login credentials from the logs, please |
-| make a note of password and then delete the file pwfile          |
-| from the data store.                                             |
-|------------------------------------------------------------------|
-```
-
-To test if the postgresql server is working properly, try connecting to the server.
-
-```bash
-psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
 ```
 
 # Creating User and Database at Launch
@@ -198,24 +173,6 @@ By default unaccent is configure to `false`
 docker run --name postgresql -d \
   -e 'DB_UNACCENT=true' \
   sameersbn/postgresql:9.4
-```
-
-## Securing the server
-
-By default a randomly generated password is assigned for the postgres user. The password is stored in a file named `pwfile` in the data store and is printed in the logs.
-
-If you dont want this password to be displayed in the logs, then please note down the password listed in `/opt/postgresql/data/pwfile` and then delete the file.
-
-```bash
-cat /opt/postgresql/data/pwfile
-rm /opt/postgresql/data/pwfile
-```
-
-Alternately, you can change the password of the postgres user
-
-```bash
-psql -U postgres -h $(docker inspect --format {{.NetworkSettings.IPAddress}} postgresql)
-\password postgres
 ```
 
 # Shell Access
