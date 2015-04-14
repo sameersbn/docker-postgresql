@@ -52,14 +52,8 @@ if [ ! -d ${PG_DATADIR} ]; then
   # check if we need to perform data migration
   PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
 
-  if [ ! -f "${PG_HOME}/pwfile" ]; then
-    PG_PASSWORD=$(pwgen -c -n -1 14)
-    echo "${PG_PASSWORD}" > ${PG_HOME}/pwfile
-  fi
-
   echo "Initializing database..."
-  sudo -u postgres -H "${PG_BINDIR}/initdb" \
-    --pgdata="${PG_DATADIR}" --pwfile=${PG_HOME}/pwfile \
+  sudo -u postgres -H "${PG_BINDIR}/initdb" --pgdata="${PG_DATADIR}" \
     --username=postgres --encoding=unicode --auth=trust >/dev/null
 fi
 
@@ -86,17 +80,6 @@ if [ -n "${PG_OLD_VERSION}" ]; then
     -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
     -o "-c config_file=${PG_OLD_CONFDIR}/postgresql.conf" \
     -O "-c config_file=${PG_CONFDIR}/postgresql.conf" >/dev/null
-fi
-
-if [ -f ${PG_HOME}/pwfile ]; then
-  PG_PASSWORD=$(cat ${PG_HOME}/pwfile)
-  echo "|------------------------------------------------------------------|"
-  echo "| PostgreSQL User: postgres, Password: ${PG_PASSWORD}              |"
-  echo "|                                                                  |"
-  echo "| To remove the PostgreSQL login credentials from the logs, please |"
-  echo "| make a note of password and then delete the file pwfile          |"
-  echo "| from the data store.                                             |"
-  echo "|------------------------------------------------------------------|"
 fi
 
 if [ -n "${DB_USER}" ]; then

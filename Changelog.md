@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- start: removed `pwfile` logic
+
 **9.4**
 - postgresql: upgrade to 9.4
 
