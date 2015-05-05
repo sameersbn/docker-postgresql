@@ -12,4 +12,4 @@ dependencies:
 test:
   override:
     - docker run -d --name=postgresql sameersbn/postgresql; sleep 10
-    - docker run -it --rm --volumes-from=postgresql sameersbn/postgresql sudo -u postgres -H psql -c "\conninfo"
+    - docker run -it --volumes-from=postgresql sameersbn/postgresql sudo -u postgres -H psql -c "\conninfo"
