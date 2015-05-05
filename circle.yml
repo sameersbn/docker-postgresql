@@ -11,5 +11,5 @@ dependencies:
     - mkdir -p ~/docker-postgresql; docker save --output ~/docker-postgresql/image.tar sameersbn/postgresql
 test:
   override:
-    - docker run -d -p 172.17.42.1:5342:5432 sameersbn/postgresql; sleep 10
-    - nc -z 172.17.42.1 5342
+    - docker run -d -p 172.17.42.1:65432:5432 sameersbn/postgresql; sleep 10
+    - nc -z 172.17.42.1 65432
