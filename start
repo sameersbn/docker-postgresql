@@ -6,6 +6,18 @@ PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
 PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 
+if [ -n "${USERMAP_UID}" ] || [ -n "${USERMAP_GID}" ]; then
+  if [ -n "${USERMAP_UID}" ] && [ -n "${USERMAP_GID}" ]; then
+    groupmod -g ${USERMAP_GID} postgres
+    usermod -u ${USERMAP_UID} -g ${USERMAP_GID} postgres
+  else
+    echo ""
+    echo "WARNING: "
+    echo "  Please specify USERMAP_UID AND USERMAP_GID or neither. Not changing user id..."
+    echo ""
+  fi
+fi
+
 # set this env variable to true to enable a line in the
 # pg_hba.conf file to trust samenet.  this can be used to connect
 # from other containers on the same host without authentication
@@ -15,6 +27,9 @@ DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
 DB_UNACCENT=${DB_UNACCENT:false}
+
+# fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)
+chown -R postgres:postgres ${PG_CONFDIR}
 
 # fix permissions and ownership of ${PG_HOME}
 mkdir -p -m 0700 ${PG_HOME}
