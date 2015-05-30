@@ -2,6 +2,7 @@
 
 **latest**
 - start: removed `pwfile` logic
+- init: added `USERMAP_*` configuration options
 
 **9.4**
 - postgresql: upgrade to 9.4
