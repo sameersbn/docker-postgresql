@@ -8,11 +8,12 @@
 - [Reporting Issues](#reporting-issues)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Creating User and Database at Launch](creating-user-and-database-at-launch)
+- [Creating User and Database at Launch](#creating-user-and-database-at-launch)
 - [Configuration](#configuration)
     - [Data Store](#data-store)
 - [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
+- [Host UID / GID Mapping](#host-uid--gid-mapping)
 
 # Introduction
 
@@ -78,11 +79,10 @@ Run the postgresql image
 docker run --name postgresql -d sameersbn/postgresql:9.4
 ```
 
-The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `--volumes-from` docker option to connect to the postgresql server over the unix socket.
+The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `docker exec` command to attach a new process to the running container and connect to the postgresql server over the unix socket.
 
 ```bash
-docker run -it --rm --volumes-from=postgresql \
-  sameersbn/postgresql:9.4 sudo -u postgres -H psql
+docker exec -it postgresql sudo -u postgres psql
 ```
 
 # Creating User and Database at Launch
@@ -223,4 +223,16 @@ docker pull sameersbn/postgresql:9.4
 
 ```bash
 docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4
+```
+
+# Host UID / GID Mapping
+
+Per default the container is configured to run postgres as user and group `postgres` with some unknown `uid` and `gid`. The host possibly uses these ids for different purposes leading to unfavorable effects. From the host it appears as if the mounted data volumes are owned by the host's user/group `[whatever id postgres has in the image]`.
+
+Also the container processes seem to be executed as the host's user/group `[whatever id postgres has in the image]`. The container can be configured to map the `uid` and `gid` of `postgres` to different ids on host by passing the environment variables `USERMAP_UID` and `USERMAP_GID`. The following command maps the ids to user and group `postgres` on the host.
+
+```bash
+docker run --name=postgresql -it --rm [options] \
+  --env="USERMAP_UID=$(id -u postgres)" --env="USERMAP_GID=$(id -g postgres)" \
+  sameersbn/postgresql:9.4
 ```
