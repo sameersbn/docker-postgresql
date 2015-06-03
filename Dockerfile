@@ -1,4 +1,4 @@
-FROM sameersbn/ubuntu:14.04.20150504
+FROM sameersbn/ubuntu:14.04.20150603
 MAINTAINER sameer@damagehead.com
 
 ENV PG_VERSION 9.4
@@ -7,7 +7,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && apt-get update \
  && apt-get install -y postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
  && rm -rf /var/lib/postgresql \
- && rm -rf /var/lib/apt/lists/* # 20150504
+ && rm -rf /var/lib/apt/lists/* # 20150603
 
 ADD start /start
 RUN chmod 755 /start
