@@ -1,8 +1,9 @@
 # Changelog
 
-**latest**
+**9.4-1**
 - start: removed `pwfile` logic
 - init: added `USERMAP_*` configuration options
+- base image update to fix SSL vulnerability
 
 **9.4**
 - postgresql: upgrade to 9.4
