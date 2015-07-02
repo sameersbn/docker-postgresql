@@ -29,7 +29,7 @@ If you find this image useful here's how you can help:
 
 # Reporting Issues
 
-Docker is a relatively new project and is active being developed and tested by a thriving community of developers and testers and every release of docker features many enhancements and bugfixes.
+Docker is a relatively new project and is being actively developed and tested by a thriving community of developers and testers and every release of Docker features many enhancements and bugfixes.
 
 Given the nature of the development and release cycle it is very important that you have the latest version of docker installed because any issue that you encounter might have already been fixed with a newer docker release.
 
@@ -50,7 +50,7 @@ If using the latest docker version and/or disabling selinux does not fix the iss
 
 In your issue report please make sure you provide the following information:
 
-- The host ditribution and release version.
+- The host distribution and release version.
 - Output of the `docker version` command
 - Output of the `docker info` command
 - The `docker run` command you used to run the image (mask out the sensitive bits).
@@ -108,7 +108,7 @@ docker run --name postgresql -d \
   -e 'DB_NAME=dbname' sameersbn/postgresql:9.4-1
 ```
 
-You may also specify a comma separated list of database names in the `DB_NAME` variable. The following command creates two new databases named *dbname1* and *dbname2 (p.s. this feature is only available in releases greater than 9.4-1)*
+You may also specify a comma separated list of database names in the `DB_NAME` variable. The following command creates two new databases named *dbname1* and *dbname2* (p.s. this feature is only available in releases greater than 9.4-1).
 
 ```bash
 docker run --name postgresql -d \
@@ -125,7 +125,7 @@ docker run --name postgresql -d \
   sameersbn/postgresql:9.4-1
 ```
 
-, will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
+will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
 
 The `PSQL_TRUST_LOCALNET` environment variable can be used to configure postgres to trust connections on the same network.  This is handy for other containers to connect without authentication. To enable this behavior, set `PSQL_TRUST_LOCALNET` to `true`.
 
