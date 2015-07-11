@@ -12,8 +12,8 @@
 - [Creating User and Database at Launch](#creating-user-and-database-at-launch)
 - [Creating a Snapshot or Slave Database](#creating-a-snapshot-or-slave-database)
 - [Host UID / GID Mapping](#host-uid--gid-mapping)
-- [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
+- [Shell Access](#shell-access)
 
 # Introduction
 
@@ -214,6 +214,29 @@ docker run --name=postgresql -it --rm [options] \
   sameersbn/postgresql:9.4-1
 ```
 
+
+# Upgrading
+
+To upgrade to newer releases, simply follow this 3 step upgrade procedure.
+
+- **Step 1**: Stop the currently running image
+
+```bash
+docker stop postgresql
+```
+
+- **Step 2**: Update the docker image.
+
+```bash
+docker pull sameersbn/postgresql:9.4-1
+```
+
+- **Step 3**: Start the image
+
+```bash
+docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4-1
+```
+
 # Shell Access
 
 For debugging and maintenance purposes you may want access the containers shell. If you are using docker version `1.3.0` or higher you can access a running containers shell using `docker exec` command.
@@ -239,25 +262,3 @@ sudo docker-enter postgresql
 ```
 
 For more information refer https://github.com/jpetazzo/nsenter
-
-# Upgrading
-
-To upgrade to newer releases, simply follow this 3 step upgrade procedure.
-
-- **Step 1**: Stop the currently running image
-
-```bash
-docker stop postgresql
-```
-
-- **Step 2**: Update the docker image.
-
-```bash
-docker pull sameersbn/postgresql:9.4-1
-```
-
-- **Step 3**: Start the image
-
-```bash
-docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4-1
-```
