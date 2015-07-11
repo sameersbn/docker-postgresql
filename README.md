@@ -8,9 +8,9 @@
 - [Reporting Issues](#reporting-issues)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
+- [Persistence](#persistence)
 - [Creating User and Database at Launch](#creating-user-and-database-at-launch)
 - [Creating a Snapshot or Slave Database](#creating-a-snapshot-or-slave-database)
-- [Data Store](#data-store)
 - [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
 - [Host UID / GID Mapping](#host-uid--gid-mapping)
@@ -84,6 +84,26 @@ The simplest way to login to the postgresql container as the administrative `pos
 ```bash
 docker exec -it postgresql sudo -u postgres psql
 ```
+
+# Persistence
+
+For data persistence a volume should be mounted at `/var/lib/postgresql`.
+
+SELinux users are also required to change the security context of the mount point so that it plays nicely with selinux.
+
+```bash
+mkdir -p /opt/postgresql/data
+sudo chcon -Rt svirt_sandbox_file_t /opt/postgresql/data
+```
+
+The updated run command looks like this.
+
+```bash
+docker run --name postgresql -d \
+  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:9.4-1
+```
+
+This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
 # Creating User and Database at Launch
 
@@ -169,26 +189,6 @@ docker run --name='psql-slave' -it --rm  \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   sameersbn/postgresql:latest
 ```
-
-# Data Store
-
-For data persistence a volume should be mounted at `/var/lib/postgresql`.
-
-SELinux users are also required to change the security context of the mount point so that it plays nicely with selinux.
-
-```bash
-mkdir -p /opt/postgresql/data
-sudo chcon -Rt svirt_sandbox_file_t /opt/postgresql/data
-```
-
-The updated run command looks like this.
-
-```bash
-docker run --name postgresql -d \
-  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:9.4-1
-```
-
-This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
 # Enable Unaccent (Search plain text with accent)
 
