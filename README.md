@@ -156,6 +156,7 @@ Create a master instance
 docker run --name='psql-master' -it --rm \
   -e 'PSQL_MODE=master' -e 'PSQL_TRUST_LOCALNET=true' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
+  -e 'DB_NAME=dbname' -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
   sameersbn/postgresql:latest
 ```
 
