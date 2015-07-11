@@ -221,5 +221,5 @@ if [ "${PSQL_MODE}" == "standalone" ] || [ "${PSQL_MODE}" == "master" ]; then
 fi
 
 echo "Starting PostgreSQL server..."
-exec gosu postgres ${PG_BINDIR}/postgres \
+exec start-stop-daemon --start --chuid postgres:postgres --exec ${PG_BINDIR}/postgres -- \
   -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf
