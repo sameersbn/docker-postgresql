@@ -148,7 +148,7 @@ host    all             all             samenet                 trust
 
 You may use the `PSQL_MODE` variable along with `REPLICATION_HOST`, `REPLICATION_PORT`, `REPLICATION_USER` and `REPLICATION_PASS` to create a snapshot of an existing database and enable stream replication.
 
-Your master database must support replication or super-user access for the credentials you specify. The `PSQL_MODE` variable should be set to "master" for replication on your master node and "slave" or "snapshot" for streaming replication or a point-in-time snapshot of a running database.
+Your master database must support replication or super-user access for the credentials you specify. The `PSQL_MODE` variable should be set to `master`, for replication on your master node and `slave` or `snapshot` respectively for streaming replication or a point-in-time snapshot of a running instance.
 
 Create a new master instance:
 
@@ -174,6 +174,7 @@ docker run --name postgresql-slave -p 5433:5432 -d \
 ```
 
 Create a snapshot downloaded from a master instance:
+
 ```bash
 docker run --name postgresql-slave -p 5433:5432 -d \
   -e 'PSQL_TRUST_LOCALNET=true' \
@@ -204,7 +205,6 @@ docker run --link postgresql-master:psql --name='postgresql-slave' -it --rm \
   -e 'REPLICATION_HOST=psql' -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   sameersbn/postgresql:latest
 ```
-
 
 # Configuration
 
