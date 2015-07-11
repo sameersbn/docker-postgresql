@@ -11,9 +11,9 @@
 - [Persistence](#persistence)
 - [Creating User and Database at Launch](#creating-user-and-database-at-launch)
 - [Creating a Snapshot or Slave Database](#creating-a-snapshot-or-slave-database)
+- [Host UID / GID Mapping](#host-uid--gid-mapping)
 - [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
-- [Host UID / GID Mapping](#host-uid--gid-mapping)
 
 # Introduction
 
@@ -202,6 +202,18 @@ docker run --name postgresql -d \
   sameersbn/postgresql:9.4-1
 ```
 
+# Host UID / GID Mapping
+
+Per default the container is configured to run postgres as user and group `postgres` with some unknown `uid` and `gid`. The host possibly uses these ids for different purposes leading to unfavorable effects. From the host it appears as if the mounted data volumes are owned by the host's user/group `[whatever id postgres has in the image]`.
+
+Also the container processes seem to be executed as the host's user/group `[whatever id postgres has in the image]`. The container can be configured to map the `uid` and `gid` of `postgres` to different ids on host by passing the environment variables `USERMAP_UID` and `USERMAP_GID`. The following command maps the ids to user and group `postgres` on the host.
+
+```bash
+docker run --name=postgresql -it --rm [options] \
+  --env="USERMAP_UID=$(id -u postgres)" --env="USERMAP_GID=$(id -g postgres)" \
+  sameersbn/postgresql:9.4-1
+```
+
 # Shell Access
 
 For debugging and maintenance purposes you may want access the containers shell. If you are using docker version `1.3.0` or higher you can access a running containers shell using `docker exec` command.
@@ -248,16 +260,4 @@ docker pull sameersbn/postgresql:9.4-1
 
 ```bash
 docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4-1
-```
-
-# Host UID / GID Mapping
-
-Per default the container is configured to run postgres as user and group `postgres` with some unknown `uid` and `gid`. The host possibly uses these ids for different purposes leading to unfavorable effects. From the host it appears as if the mounted data volumes are owned by the host's user/group `[whatever id postgres has in the image]`.
-
-Also the container processes seem to be executed as the host's user/group `[whatever id postgres has in the image]`. The container can be configured to map the `uid` and `gid` of `postgres` to different ids on host by passing the environment variables `USERMAP_UID` and `USERMAP_GID`. The following command maps the ids to user and group `postgres` on the host.
-
-```bash
-docker run --name=postgresql -it --rm [options] \
-  --env="USERMAP_UID=$(id -u postgres)" --env="USERMAP_GID=$(id -g postgres)" \
-  sameersbn/postgresql:9.4-1
 ```
