@@ -150,59 +150,23 @@ You may use the `PSQL_MODE` variable along with `REPLICATION_HOST`, `REPLICATION
 
 Your master database must support replication or super-user access for the credentials you specify. The `PSQL_MODE` variable should be set to `master`, for replication on your master node and `slave` or `snapshot` respectively for streaming replication or a point-in-time snapshot of a running instance.
 
-Create a new master instance:
+Create a master instance
 
 ```bash
-docker run --name postgresql-master 5432:5432 -d \
-  -e 'PSQL_TRUST_LOCALNET=true' \
-  -e 'PSQL_MODE=master' \
-  -e 'DB_NAME=dbname' \
-  -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
-  -e 'REPLICATION_USER=replicator'  -e 'REPLICATION_PASS=replicatorpass' \
-  sameersbn/postgresql:9.4
-```
-
-Create a slave instance with streaming replication:
-
-```bash
-docker run --name postgresql-slave -p 5433:5432 -d \
-  -e 'PSQL_TRUST_LOCALNET=true' \
-  -e 'PSQL_MODE=slave' \
-  -e 'REPLICATION_HOST=localhost' -e 'REPLICATION_PORT=5432' \
+docker run --name='psql-master' -it --rm \
+  -e 'PSQL_MODE=master' -e 'PSQL_TRUST_LOCALNET=true' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
-  sameersbn/postgresql:9.4
-```
-
-Create a snapshot downloaded from a master instance:
-
-```bash
-docker run --name postgresql-slave -p 5433:5432 -d \
-  -e 'PSQL_TRUST_LOCALNET=true' \
-  -e 'PSQL_MODE=snapshot' \
-  -e 'REPLICATION_HOST=localhost' -e 'REPLICATION_PORT=5432' \
-  -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
-  sameersbn/postgresql:9.4
-```
-
-You may use docker links and interactive shells when testing this module:
-
-```bash
-mkdir -p /tmp/postgresql-master
-mkdir -p /tmp/postgresql-slave
-# master
-docker run --name='postgresql-master' -it --rm \
-  --volume=/tmp/postgresql-master:/var/lib/postgresql \
-  -e 'PSQL_TRUST_LOCALNET=true' \
-  -e 'PSQL_MODE=master' \
-  -e 'REPLICATION_USER=replicator'  -e 'REPLICATION_PASS=replicatorpass' \
   sameersbn/postgresql:latest
+```
 
-# slave
-docker run --link postgresql-master:psql --name='postgresql-slave' -it --rm \
-  --volume=/tmp/postgresql-slave:/var/lib/postgresql \
-  -e 'PSQL_TRUST_LOCALNET=true' \
-  -e 'PSQL_MODE=slave' \
-  -e 'REPLICATION_HOST=psql' -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
+Create a streaming replication instance
+
+```bash
+docker run --name='psql-slave' -it --rm  \
+  --link psql-master:psql-master  \
+  -e 'PSQL_MODE=slave' -e 'PSQL_TRUST_LOCALNET=true' \
+  -e 'REPLICATION_HOST=psql-master' -e 'REPLICATION_PORT=5432' \
+  -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   sameersbn/postgresql:latest
 ```
 
