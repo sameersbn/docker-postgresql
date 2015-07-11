@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- added replication options
+
 **9.4-1**
 - start: removed `pwfile` logic
 - init: added `USERMAP_*` configuration options
