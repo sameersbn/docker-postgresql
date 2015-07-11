@@ -10,8 +10,7 @@
 - [Quick Start](#quick-start)
 - [Creating User and Database at Launch](#creating-user-and-database-at-launch)
 - [Creating a Snapshot or Slave Database](#creating-a-snapshot-or-slave-database)
-- [Configuration](#configuration)
-    - [Data Store](#data-store)
+- [Data Store](#data-store)
 - [Shell Access](#shell-access)
 - [Upgrading](#upgrading)
 - [Host UID / GID Mapping](#host-uid--gid-mapping)
@@ -171,9 +170,7 @@ docker run --name='psql-slave' -it --rm  \
   sameersbn/postgresql:latest
 ```
 
-# Configuration
-
-## Data Store
+# Data Store
 
 For data persistence a volume should be mounted at `/var/lib/postgresql`.
 
@@ -193,7 +190,7 @@ docker run --name postgresql -d \
 
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
 
-## Enable Unaccent (Search plain text with accent)
+# Enable Unaccent (Search plain text with accent)
 
 Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search.
 
