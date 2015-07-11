@@ -34,9 +34,6 @@ DB_UNACCENT=${DB_UNACCENT:false}
 # "snapshot" will create a point in time backup of a master instance.
 PSQL_MODE=${PSQL_MODE:-"standalone"}
 
-# postgresql wal archives are used for point-in-time recovery and delayed replication.
-PSQL_ARCHIVEMODE=${PSQL_ARCHIVEMODE:-"off"}
-
 REPLICATION_USER=${REPLICATION_USER:-}
 REPLICATION_PASS=${REPLICATION_PASS:-}
 REPLICATION_HOST=${REPLICATION_HOST:-}
@@ -100,17 +97,8 @@ max_wal_senders = 3
 checkpoint_segments = 8
 wal_keep_segments = 8
 EOF
-    if [ "${PSQL_ARCHIVEMODE}" == "on" ]; then
-      sudo -u postgres mkdir -p ${PG_ARCHIVEDIR}
-      cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
-archive_mode = ${PSQL_ARCHIVEMODE}
-archive_command = 'test ! -f ${PG_ARCHIVEDIR}/%f && cp %p ${PG_ARCHIVEDIR}/%f'
-archive_cleanup_command = 'pg_archivecleanup ${PSQL_ARCHIVEMODE} %r'
-EOF
-    fi
   fi
 fi
-
 
 cd ${PG_HOME}
 
