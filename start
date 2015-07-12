@@ -7,18 +7,6 @@ PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
 PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 PG_ARCHIVEDIR="${PG_HOME}/${PG_VERSION}/archive"
 
-if [ -n "${USERMAP_UID}" ] || [ -n "${USERMAP_GID}" ]; then
-  if [ -n "${USERMAP_UID}" ] && [ -n "${USERMAP_GID}" ]; then
-    groupmod -g ${USERMAP_GID} postgres
-    usermod -u ${USERMAP_UID} -g ${USERMAP_GID} postgres
-  else
-    echo ""
-    echo "WARNING: "
-    echo "  Please specify USERMAP_UID AND USERMAP_GID or neither. Not changing user id..."
-    echo ""
-  fi
-fi
-
 # set this env variable to true to enable a line in the
 # pg_hba.conf file to trust samenet.  this can be used to connect
 # from other containers on the same host without authentication
@@ -41,6 +29,17 @@ REPLICATION_PORT=${REPLICATION_PORT:-5432}
 
 # set this env variable to "require" to enable encryption and "verify-full" for verification.
 PSQL_SSLMODE=${PSQL_SSLMODE:-"disable"}
+
+## Adapt uid and gid for postgres:postgres
+USERMAP_ORIG_UID=$(id -u postgres)
+USERMAP_ORIG_GID=$(id -g postgres)
+USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
+USERMAP_UID=${USERMAP_UID:-$USERMAP_ORIG_UID}
+if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP_ORIG_GID} ]]; then
+  echo "Adapting uid and gid for postgres:postgres to $USERMAP_UID:$USERMAP_GID"
+  groupmod -g ${USERMAP_GID} postgres
+  sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
+fi
 
 # fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)
 chown -R postgres:postgres ${PG_CONFDIR}
