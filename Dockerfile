@@ -1,7 +1,9 @@
 FROM sameersbn/ubuntu:14.04.20150712
 MAINTAINER sameer@damagehead.com
 
-ENV PG_VERSION 9.4
+ENV PG_VERSION=9.4 \
+    PG_USER=postgres
+
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \

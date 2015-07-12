@@ -30,27 +30,27 @@ REPLICATION_PORT=${REPLICATION_PORT:-5432}
 # set this env variable to "require" to enable encryption and "verify-full" for verification.
 PSQL_SSLMODE=${PSQL_SSLMODE:-"disable"}
 
-## Adapt uid and gid for postgres:postgres
-USERMAP_ORIG_UID=$(id -u postgres)
-USERMAP_ORIG_GID=$(id -g postgres)
+## Adapt uid and gid for ${PG_USER}:${PG_USER}
+USERMAP_ORIG_UID=$(id -u ${PG_USER})
+USERMAP_ORIG_GID=$(id -g ${PG_USER})
 USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
 USERMAP_UID=${USERMAP_UID:-$USERMAP_ORIG_UID}
 if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP_ORIG_GID} ]]; then
-  echo "Adapting uid and gid for postgres:postgres to $USERMAP_UID:$USERMAP_GID"
-  groupmod -g ${USERMAP_GID} postgres
+  echo "Adapting uid and gid for ${PG_USER}:${PG_USER} to $USERMAP_UID:$USERMAP_GID"
+  groupmod -g ${USERMAP_GID} ${PG_USER}
   sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
 fi
 
 # fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)
-chown -R postgres:postgres ${PG_CONFDIR}
+chown -R ${PG_USER}:${PG_USER} ${PG_CONFDIR}
 
 # fix permissions and ownership of ${PG_HOME}
 mkdir -p -m 0700 ${PG_HOME}
-chown -R postgres:postgres ${PG_HOME}
+chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 
 # fix permissions and ownership of /run/postgresql
 mkdir -p -m 0755 /run/postgresql /run/postgresql/${PG_VERSION}-main.pg_stat_tmp
-chown -R postgres:postgres /run/postgresql
+chown -R ${PG_USER}:${PG_USER} /run/postgresql
 chmod g+s /run/postgresql
 
 if [ "${PSQL_SSLMODE}" == "disable" ]; then
@@ -106,19 +106,19 @@ if [ ! -d ${PG_DATADIR} ]; then
   if [ "${PSQL_MODE}" == "slave" ] || [ "${PSQL_MODE}" == "snapshot" ]; then
     echo "Replicating database..."
     if [ "${PSQL_MODE}" == "snapshot" ]; then
-      sudo -u postgres -H \
+      sudo -u ${PG_USER} -H \
         PGPASSWORD=$REPLICATION_PASS "${PG_BINDIR}/pg_basebackup" -D "${PG_DATADIR}" \
         -h "${REPLICATION_HOST}" -p "${REPLICATION_PORT}" -U "${REPLICATION_USER}" -w -x -v -P
     elif [ "${PSQL_MODE}" == "slave" ]; then
       # Setup streaming replication.
-      sudo -u postgres -H \
+      sudo -u ${PG_USER} -H \
         PGPASSWORD=$REPLICATION_PASS "${PG_BINDIR}/pg_basebackup" -D "${PG_DATADIR}" \
         -h "${REPLICATION_HOST}" -p "${REPLICATION_PORT}" -U "${REPLICATION_USER}" -w -v -P
       echo "Setting up hot standby configuration..."
       cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
 hot_standby = on
 EOF
-      sudo -u postgres touch ${PG_DATADIR}/recovery.conf
+      sudo -u ${PG_USER} touch ${PG_DATADIR}/recovery.conf
       cat >> ${PG_DATADIR}/recovery.conf <<EOF
 standby_mode = 'on'
 primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'
@@ -131,8 +131,8 @@ EOF
     PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
 
     echo "Initializing database..."
-    sudo -u postgres -H "${PG_BINDIR}/initdb" --pgdata="${PG_DATADIR}" \
-      --username=postgres --encoding=unicode --auth=trust >/dev/null
+    sudo -u ${PG_USER} -H "${PG_BINDIR}/initdb" --pgdata="${PG_DATADIR}" \
+      --username=${PG_USER} --encoding=unicode --auth=trust >/dev/null
   fi
 fi
 
@@ -155,7 +155,7 @@ if [ -n "${PG_OLD_VERSION}" ]; then
 
   # migrate ${PG_OLD_VERSION} data
   echo "Migration in progress. This could take a while, please be patient..."
-  sudo -u postgres -H ${PG_BINDIR}/pg_upgrade \
+  sudo -u ${PG_USER} -H ${PG_BINDIR}/pg_upgrade \
     -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
     -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
     -o "-c config_file=${PG_OLD_CONFDIR}/postgresql.conf" \
@@ -175,7 +175,7 @@ if [ "${PSQL_MODE}" == "standalone" ] || [ "${PSQL_MODE}" == "master" ]; then
     else
       echo "Creating user \"${REPLICATION_USER}\"..."
       echo "CREATE ROLE ${REPLICATION_USER} WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
-        sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        sudo -u ${PG_USER} -H ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
   fi
@@ -190,7 +190,7 @@ if [ "${PSQL_MODE}" == "standalone" ] || [ "${PSQL_MODE}" == "master" ]; then
     else
       echo "Creating user \"${DB_USER}\"..."
       echo "CREATE ROLE ${DB_USER} with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
-        sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        sudo -u ${PG_USER} -H ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
   fi
@@ -199,20 +199,20 @@ if [ "${PSQL_MODE}" == "standalone" ] || [ "${PSQL_MODE}" == "master" ]; then
     for db in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
       echo "Creating database \"${db}\"..."
       echo "CREATE DATABASE ${db};" | \
-        sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+        sudo -u ${PG_USER} -H ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
 
       if [ "${DB_UNACCENT}" == "true" ]; then
         echo "Installing unaccent extension..."
         echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
-          sudo -u postgres -H ${PG_BINDIR}/postgres --single ${db} \
+          sudo -u ${PG_USER} -H ${PG_BINDIR}/postgres --single ${db} \
             -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
       fi
 
       if [ -n "${DB_USER}" ]; then
         echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
         echo "GRANT ALL PRIVILEGES ON DATABASE ${db} to ${DB_USER};" |
-          sudo -u postgres -H ${PG_BINDIR}/postgres --single \
+          sudo -u ${PG_USER} -H ${PG_BINDIR}/postgres --single \
             -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
       fi
     done
@@ -220,5 +220,5 @@ if [ "${PSQL_MODE}" == "standalone" ] || [ "${PSQL_MODE}" == "master" ]; then
 fi
 
 echo "Starting PostgreSQL server..."
-exec start-stop-daemon --start --chuid postgres:postgres --exec ${PG_BINDIR}/postgres -- \
+exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} --exec ${PG_BINDIR}/postgres -- \
   -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf
