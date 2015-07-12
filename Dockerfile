@@ -16,7 +16,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && rm -rf /var/lib/postgresql \
  && rm -rf /var/lib/apt/lists/*
 
-ADD start /start
+COPY start /start
 RUN chmod 755 /start
 
 EXPOSE 5432/tcp
