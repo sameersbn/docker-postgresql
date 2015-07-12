@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-PG_HOME="/var/lib/postgresql"
-PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main"
-PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin"
-PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
-PG_ARCHIVEDIR="${PG_HOME}/${PG_VERSION}/archive"
-
 # set this env variable to true to enable a line in the
 # pg_hba.conf file to trust samenet.  this can be used to connect
 # from other containers on the same host without authentication
