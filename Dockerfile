@@ -1,6 +1,4 @@
-FROM sameersbn/ubuntu:14.04.20150712
-MAINTAINER sameer@damagehead.com
-
+FROM ubuntu:latest
 ENV PG_VERSION=9.4 \
     PG_USER=postgres \
     PG_HOME="/var/lib/postgresql"
