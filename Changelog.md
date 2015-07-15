@@ -1,6 +1,6 @@
 # Changelog
 
-**latest**
+**9.4-2**
 - added replication options
 
 **9.4-1**
