@@ -16,9 +16,9 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && rm -rf ${PG_HOME} \
  && rm -rf /var/lib/apt/lists/*
 
-COPY start /start
-RUN chmod 755 /start
+COPY entrypoint.sh /sbin/entrypoint.sh
+RUN chmod 755 /sbin/entrypoint.sh
 
 EXPOSE 5432/tcp
 VOLUME ["${PG_HOME}", "/run/postgresql"]
-CMD ["/start"]
+CMD ["/sbin/entrypoint.sh"]
