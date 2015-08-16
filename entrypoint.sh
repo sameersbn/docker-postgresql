@@ -55,6 +55,7 @@ if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP
 fi
 
 create_data_dir
+create_log_dir
 create_run_dir
 
 # fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)

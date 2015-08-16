@@ -4,7 +4,8 @@ MAINTAINER sameer@damagehead.com
 ENV PG_VERSION=9.4 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
-    PG_RUNDIR=/run/postgresql
+    PG_RUNDIR=/run/postgresql \
+    PG_LOGDIR=/var/log/postgresql
 
 ENV PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main" \
     PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin" \
