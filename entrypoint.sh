@@ -24,6 +24,25 @@ REPLICATION_PORT=${REPLICATION_PORT:-5432}
 # set this env variable to "require" to enable encryption and "verify-full" for verification.
 PSQL_SSLMODE=${PSQL_SSLMODE:-disable}
 
+create_data_dir() {
+  mkdir -p ${PG_HOME}
+  chmod -R 0700 ${PG_HOME}
+  chown ${PG_USER}:${PG_USER} ${PG_HOME}
+}
+
+create_log_dir() {
+  mkdir -p ${PG_LOGDIR}
+  chmod -R 1775 ${PG_LOGDIR}
+  chown root:${PG_USER} ${PG_LOGDIR}
+}
+
+create_run_dir() {
+  mkdir -p ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
+  chmod -R 0755 ${PG_RUNDIR}
+  chmod g+s ${PG_RUNDIR}
+  chown ${PG_USER}:${PG_USER} ${PG_RUNDIR}
+}
+
 ## Adapt uid and gid for ${PG_USER}:${PG_USER}
 USERMAP_ORIG_UID=$(id -u ${PG_USER})
 USERMAP_ORIG_GID=$(id -g ${PG_USER})
@@ -35,17 +54,11 @@ if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP
   sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
 fi
 
+create_data_dir
+create_run_dir
+
 # fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)
 chown -R ${PG_USER}:${PG_USER} ${PG_CONFDIR}
-
-# fix permissions and ownership of ${PG_HOME}
-mkdir -p -m 0700 ${PG_HOME}
-chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
-
-# fix permissions and ownership of ${PG_RUNDIR}
-mkdir -p -m 0755 ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
-chown -R ${PG_USER}:${PG_USER} ${PG_RUNDIR}
-chmod g+s ${PG_RUNDIR}
 
 if [[ ${PSQL_SSLMODE} == disable ]]; then
   sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf
