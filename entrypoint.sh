@@ -42,10 +42,10 @@ chown -R ${PG_USER}:${PG_USER} ${PG_CONFDIR}
 mkdir -p -m 0700 ${PG_HOME}
 chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 
-# fix permissions and ownership of /run/postgresql
-mkdir -p -m 0755 /run/postgresql /run/postgresql/${PG_VERSION}-main.pg_stat_tmp
-chown -R ${PG_USER}:${PG_USER} /run/postgresql
-chmod g+s /run/postgresql
+# fix permissions and ownership of ${PG_RUNDIR}
+mkdir -p -m 0755 ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
+chown -R ${PG_USER}:${PG_USER} ${PG_RUNDIR}
+chmod g+s ${PG_RUNDIR}
 
 if [[ ${PSQL_SSLMODE} == disable ]]; then
   sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf

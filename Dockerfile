@@ -3,7 +3,8 @@ MAINTAINER sameer@damagehead.com
 
 ENV PG_VERSION=9.4 \
     PG_USER=postgres \
-    PG_HOME="/var/lib/postgresql"
+    PG_HOME=/var/lib/postgresql \
+    PG_RUNDIR=/run/postgresql
 
 ENV PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main" \
     PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin" \
@@ -20,5 +21,5 @@ COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod 755 /sbin/entrypoint.sh
 
 EXPOSE 5432/tcp
-VOLUME ["${PG_HOME}", "/run/postgresql"]
+VOLUME ["${PG_HOME}", "${PG_RUNDIR}"]
 CMD ["/sbin/entrypoint.sh"]
