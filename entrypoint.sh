@@ -39,20 +39,20 @@ map_postgres_uid() {
 create_data_dir() {
   mkdir -p ${PG_HOME}
   chmod -R 0700 ${PG_HOME}
-  chown ${PG_USER}:${PG_USER} ${PG_HOME}
+  chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 }
 
 create_log_dir() {
   mkdir -p ${PG_LOGDIR}
   chmod -R 1775 ${PG_LOGDIR}
-  chown root:${PG_USER} ${PG_LOGDIR}
+  chown -R root:${PG_USER} ${PG_LOGDIR}
 }
 
 create_run_dir() {
   mkdir -p ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
   chmod -R 0755 ${PG_RUNDIR}
   chmod g+s ${PG_RUNDIR}
-  chown ${PG_USER}:${PG_USER} ${PG_RUNDIR}
+  chown -R ${PG_USER}:${PG_USER} ${PG_RUNDIR}
 }
 
 map_postgres_uid
