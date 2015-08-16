@@ -24,6 +24,18 @@ REPLICATION_PORT=${REPLICATION_PORT:-5432}
 # set this env variable to "require" to enable encryption and "verify-full" for verification.
 PSQL_SSLMODE=${PSQL_SSLMODE:-disable}
 
+map_postgres_uid() {
+  USERMAP_ORIG_UID=$(id -u ${PG_USER})
+  USERMAP_ORIG_GID=$(id -g ${PG_USER})
+  USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
+  USERMAP_UID=${USERMAP_UID:-$USERMAP_ORIG_UID}
+  if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP_ORIG_GID} ]]; then
+    echo "Adapting uid and gid for ${PG_USER}:${PG_USER} to $USERMAP_UID:$USERMAP_GID"
+    groupmod -g ${USERMAP_GID} ${PG_USER}
+    sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
+  fi
+}
+
 create_data_dir() {
   mkdir -p ${PG_HOME}
   chmod -R 0700 ${PG_HOME}
@@ -43,17 +55,7 @@ create_run_dir() {
   chown ${PG_USER}:${PG_USER} ${PG_RUNDIR}
 }
 
-## Adapt uid and gid for ${PG_USER}:${PG_USER}
-USERMAP_ORIG_UID=$(id -u ${PG_USER})
-USERMAP_ORIG_GID=$(id -g ${PG_USER})
-USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
-USERMAP_UID=${USERMAP_UID:-$USERMAP_ORIG_UID}
-if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP_ORIG_GID} ]]; then
-  echo "Adapting uid and gid for ${PG_USER}:${PG_USER} to $USERMAP_UID:$USERMAP_GID"
-  groupmod -g ${USERMAP_GID} ${PG_USER}
-  sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
-fi
-
+map_postgres_uid
 create_data_dir
 create_log_dir
 create_run_dir
