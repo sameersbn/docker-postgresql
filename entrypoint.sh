@@ -188,7 +188,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
       DB_USER=
     else
       echo "Creating user \"${REPLICATION_USER}\"..."
-      echo "CREATE ROLE ${REPLICATION_USER} WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
+      echo "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
@@ -203,7 +203,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
       DB_USER=
     else
       echo "Creating user \"${DB_USER}\"..."
-      echo "CREATE ROLE ${DB_USER} with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
+      echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
@@ -212,7 +212,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
   if [[ -n ${DB_NAME} ]]; then
     for db in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
       echo "Creating database \"${db}\"..."
-      echo "CREATE DATABASE ${db};" | \
+      echo "CREATE DATABASE \"${db}\";" | \
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
 
@@ -225,7 +225,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
 
       if [[ -n ${DB_USER} ]]; then
         echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
-        echo "GRANT ALL PRIVILEGES ON DATABASE ${db} to ${DB_USER};" |
+        echo "GRANT ALL PRIVILEGES ON DATABASE \"${db}\" to \"${DB_USER}\";" |
           sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
             -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
       fi
