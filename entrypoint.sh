@@ -9,6 +9,7 @@ PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:-false}
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
+DB_LOCALE=${DB_LOCALE:-C}
 DB_UNACCENT=${DB_UNACCENT:false}
 
 # by default postgresql will start up as a standalone instance.
@@ -146,9 +147,14 @@ EOF
     # check if we need to perform data migration
     PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
 
+    if [[ $DB_LOCALE != C ]]; then
+      echo "Generating required locale \"${DB_LOCALE}\"..."
+      locale-gen ${DB_LOCALE} >/dev/null
+    fi
+
     echo "Initializing database..."
     sudo -Hu ${PG_USER} ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-      --username=${PG_USER} --encoding=unicode --auth=trust >/dev/null
+      --username=${PG_USER} --encoding=unicode --locale=${DB_LOCALE} --auth=trust >/dev/null
   fi
 fi
 
