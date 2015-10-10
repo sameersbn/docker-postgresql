@@ -165,7 +165,7 @@ if [[ -n ${PG_OLD_VERSION} ]]; then
 
   echo "Installing postgresql-${PG_OLD_VERSION}..."
   apt-get update
-  apt-get install postgresql-${PG_OLD_VERSION} postgresql-client-${PG_OLD_VERSION}
+  DEBIAN_FRONTEND=noninteractive apt-get install postgresql-${PG_OLD_VERSION} postgresql-client-${PG_OLD_VERSION}
   rm -rf /var/lib/apt/lists/*
 
   # migrate ${PG_OLD_VERSION} data
