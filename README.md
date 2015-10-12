@@ -1,4 +1,4 @@
-[![Circle CI](https://circleci.com/gh/sameersbn/docker-postgresql.svg?style=svg)](https://circleci.com/gh/sameersbn/docker-postgresql)
+[![Circle CI](https://circleci.com/gh/sameersbn/docker-postgresql.svg?style=svg)](https://circleci.com/gh/sameersbn/docker-postgresql) [![Docker Repository on Quay.io](https://quay.io/repository/sameersbn/postgresql/status "Docker Repository on Quay.io")](https://quay.io/repository/sameersbn/postgresql)
 
 # Table of Contents
 
