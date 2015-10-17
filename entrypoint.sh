@@ -9,6 +9,7 @@ PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:-false}
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
 DB_PASS=${DB_PASS:-}
+DB_LOCALE=${DB_LOCALE:-C}
 DB_UNACCENT=${DB_UNACCENT:false}
 
 # by default postgresql will start up as a standalone instance.
@@ -146,9 +147,14 @@ EOF
     # check if we need to perform data migration
     PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
 
+    if [[ $DB_LOCALE != C ]]; then
+      echo "Generating required locale \"${DB_LOCALE}\"..."
+      locale-gen ${DB_LOCALE} >/dev/null
+    fi
+
     echo "Initializing database..."
     sudo -Hu ${PG_USER} ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-      --username=${PG_USER} --encoding=unicode --auth=trust >/dev/null
+      --username=${PG_USER} --encoding=unicode --locale=${DB_LOCALE} --auth=trust >/dev/null
   fi
 fi
 
@@ -188,7 +194,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
       DB_USER=
     else
       echo "Creating user \"${REPLICATION_USER}\"..."
-      echo "CREATE ROLE ${REPLICATION_USER} WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
+      echo "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
@@ -203,7 +209,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
       DB_USER=
     else
       echo "Creating user \"${DB_USER}\"..."
-      echo "CREATE ROLE ${DB_USER} with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
+      echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
     fi
@@ -212,7 +218,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
   if [[ -n ${DB_NAME} ]]; then
     for db in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
       echo "Creating database \"${db}\"..."
-      echo "CREATE DATABASE ${db};" | \
+      echo "CREATE DATABASE \"${db}\";" | \
         sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
           -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
 
@@ -225,7 +231,7 @@ if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
 
       if [[ -n ${DB_USER} ]]; then
         echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
-        echo "GRANT ALL PRIVILEGES ON DATABASE ${db} to ${DB_USER};" |
+        echo "GRANT ALL PRIVILEGES ON DATABASE \"${db}\" to \"${DB_USER}\";" |
           sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single \
             -D ${PG_DATADIR} -c config_file=${PG_CONFDIR}/postgresql.conf >/dev/null
       fi
