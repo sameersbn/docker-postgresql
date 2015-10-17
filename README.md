@@ -148,6 +148,8 @@ docker run --name postgresql -d \
 
 will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
 
+The `DB_LOCALE` environment variable can be used to configure the locale used for database creation. Its default value is set to C.
+
 The `PSQL_TRUST_LOCALNET` environment variable can be used to configure postgres to trust connections on the same network.  This is handy for other containers to connect without authentication. To enable this behavior, set `PSQL_TRUST_LOCALNET` to `true`.
 
 For example,
