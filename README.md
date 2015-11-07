@@ -57,10 +57,12 @@ In your issue report please make sure you provide the following information:
 
 # Installation
 
-Automated builds of the image are available on [Quay.io](https://quay.io/repository/sameersbn/postgresql) and is the recommended method of installation.
+Automated builds of the image are available on [Dockerhub](https://hub.docker.com/r/sameersbn/postgresql) and is the recommended method of installation.
+
+> **Note**: Builds are also available on [Quay.io](https://quay.io/repository/sameersbn/postgresql)
 
 ```bash
-docker pull quay.io/sameersbn/postgresql:9.4-7
+docker pull sameersbn/postgresql:9.4-7
 ```
 
 Alternately you can build the image yourself.
@@ -76,7 +78,7 @@ docker build -t="$USER/postgresql" .
 Run the postgresql image
 
 ```bash
-docker run --name postgresql -d quay.io/sameersbn/postgresql:9.4-7
+docker run --name postgresql -d sameersbn/postgresql:9.4-7
 ```
 
 The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `docker exec` command to attach a new process to the running container and connect to the postgresql server over the unix socket.
@@ -100,7 +102,7 @@ The updated run command looks like this.
 
 ```bash
 docker run --name postgresql -d \
-  -v /opt/postgresql/data:/var/lib/postgresql quay.io/sameersbn/postgresql:9.4-7
+  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:9.4-7
 ```
 
 This will make sure that the data stored in the database is not lost when the image is stopped and started again.
@@ -114,7 +116,7 @@ To create a new user you should specify the `DB_USER` and `DB_PASS` variables. T
 ```bash
 docker run --name postgresql -d \
   -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 **NOTE**
@@ -125,7 +127,7 @@ Similarly, you can also create a new database by specifying the database name in
 
 ```bash
 docker run --name postgresql -d \
-  -e 'DB_NAME=dbname' quay.io/sameersbn/postgresql:9.4-7
+  -e 'DB_NAME=dbname' sameersbn/postgresql:9.4-7
 ```
 
 You may also specify a comma separated list of database names in the `DB_NAME` variable. The following command creates two new databases named *dbname1* and *dbname2* (p.s. this feature is only available in releases greater than 9.1-1).
@@ -133,7 +135,7 @@ You may also specify a comma separated list of database names in the `DB_NAME` v
 ```bash
 docker run --name postgresql -d \
   -e 'DB_NAME=dbname1,dbname2' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database(s).
@@ -143,7 +145,7 @@ For example,
 ```bash
 docker run --name postgresql -d \
   -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' -e 'DB_NAME=dbname' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
@@ -157,7 +159,7 @@ For example,
 ```bash
 docker run --name postgresql -d \
   -e 'PSQL_TRUST_LOCALNET=true' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 This has the effect of adding the following to the `pg_hba.conf` file:
@@ -179,7 +181,7 @@ docker run --name='psql-master' -it --rm \
   -e 'PSQL_MODE=master' -e 'PSQL_TRUST_LOCALNET=true' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   -e 'DB_NAME=dbname' -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 Create a streaming replication instance
@@ -190,7 +192,7 @@ docker run --name='psql-slave' -it --rm  \
   -e 'PSQL_MODE=slave' -e 'PSQL_TRUST_LOCALNET=true' \
   -e 'REPLICATION_HOST=psql-master' -e 'REPLICATION_PORT=5432' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 # Enable Unaccent (Search plain text with accent)
@@ -202,7 +204,7 @@ By default unaccent is configure to `false`
 ```bash
 docker run --name postgresql -d \
   -e 'DB_UNACCENT=true' \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 # Host UID / GID Mapping
@@ -214,7 +216,7 @@ Also the container processes seem to be executed as the host's user/group `[what
 ```bash
 docker run --name=postgresql -it --rm [options] \
   --env="USERMAP_UID=$(id -u postgres)" --env="USERMAP_GID=$(id -g postgres)" \
-  quay.io/sameersbn/postgresql:9.4-7
+  sameersbn/postgresql:9.4-7
 ```
 
 
@@ -231,13 +233,13 @@ docker stop postgresql
 - **Step 2**: Update the docker image.
 
 ```bash
-docker pull quay.io/sameersbn/postgresql:9.4-7
+docker pull sameersbn/postgresql:9.4-7
 ```
 
 - **Step 3**: Start the image
 
 ```bash
-docker run --name postgresql -d [OPTIONS] quay.io/sameersbn/postgresql:9.4-7
+docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4-7
 ```
 
 # Shell Access

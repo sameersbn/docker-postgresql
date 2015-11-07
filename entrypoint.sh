@@ -130,7 +130,7 @@ if [[ ! -d ${PG_DATADIR} ]]; then
       # Setup streaming replication.
       sudo -Hu ${PG_USER} \
         PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-        -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -w -v -P
+        -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w -v -P
       echo "Setting up hot standby configuration..."
       cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
 hot_standby = on
