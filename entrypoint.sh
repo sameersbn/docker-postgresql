@@ -128,9 +128,6 @@ if [[ -n ${PG_OLD_VERSION} ]]; then
     -O "-c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf" >/dev/null
 fi
 
-# fix ownership of ${PG_CONFDIR} (may be necessary if USERMAP_* was set)
-chown -R ${PG_USER}:${PG_USER} ${PG_CONFDIR}
-
 if [[ ${PSQL_SSLMODE} == disable ]]; then
   sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf
 fi
