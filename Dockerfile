@@ -7,8 +7,8 @@ ENV PG_VERSION=9.4 \
     PG_RUNDIR=/run/postgresql \
     PG_LOGDIR=/var/log/postgresql
 
-ENV PG_CONFDIR="/etc/postgresql/${PG_VERSION}/main" \
-    PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin" \
+ENV PG_BINDIR="/usr/lib/postgresql/${PG_VERSION}/bin" \
+    PG_CONFDIR="${PG_HOME}/${PG_VERSION}/main" \
     PG_DATADIR="${PG_HOME}/${PG_VERSION}/main"
 
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
