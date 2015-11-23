@@ -125,9 +125,9 @@ if [[ -n ${PG_OLD_VERSION} ]]; then
 fi
 
 if [[ ${PSQL_SSLMODE} == disable ]]; then
-  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = false|" ${PG_CONFDIR}/postgresql.conf
+  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = off|" ${PG_CONFDIR}/postgresql.conf
 else
-  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = true|" ${PG_CONFDIR}/postgresql.conf
+  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = on|" ${PG_CONFDIR}/postgresql.conf
 fi
 
 # Change DSM from `posix' to `sysv' if we are inside an lx-brand container
