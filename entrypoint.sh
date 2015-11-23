@@ -77,15 +77,11 @@ if [[ ! -d ${PG_DATADIR} ]]; then
         PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
         -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w -v -P
       echo "Setting up hot standby configuration..."
-      cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
-hot_standby = on
-EOF
+      sudo -Hu ${PG_USER} sed -i "s|^#hot_standby = .*|hot_standby = on|" ${PG_CONFDIR}/postgresql.conf
       sudo -Hu ${PG_USER} touch ${PG_DATADIR}/recovery.conf
-      cat >> ${PG_DATADIR}/recovery.conf <<EOF
-standby_mode = 'on'
-primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'
-trigger_file = '/tmp/postgresql.trigger'
-EOF
+      ( echo "standby_mode = 'on'";
+        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'";
+        echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_DATADIR}/recovery.conf
     fi
 
   else
@@ -129,54 +125,51 @@ if [[ -n ${PG_OLD_VERSION} ]]; then
 fi
 
 if [[ ${PSQL_SSLMODE} == disable ]]; then
-  sed 's/ssl = true/#ssl = true/' -i ${PG_CONFDIR}/postgresql.conf
+  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = false|" ${PG_CONFDIR}/postgresql.conf
+else
+  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = true|" ${PG_CONFDIR}/postgresql.conf
 fi
 
 # Change DSM from `posix' to `sysv' if we are inside an lx-brand container
 if [[ $(uname -v) == "BrandZ virtual linux" ]]; then
-  sed 's/\(dynamic_shared_memory_type = \)posix/\1sysv/' \
-    -i ${PG_CONFDIR}/postgresql.conf
+  sed 's/\(dynamic_shared_memory_type = \)posix/\1sysv/' -i ${PG_CONFDIR}/postgresql.conf
 fi
 
 # listen on all interfaces
-cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
-listen_addresses = '*'
-EOF
+sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*listen_addresses = .*|listen_addresses = '*'|" ${PG_CONFDIR}/postgresql.conf
 
 if [[ ${PSQL_TRUST_LOCALNET} == true ]]; then
-  echo "Enabling trust samenet in pg_hba.conf..."
-  cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
-host    all             all             samenet                 trust
-EOF
+  if ! grep -q "host \+all \+all \+samenet \+trust" ${PG_CONFDIR}/pg_hba.conf; then
+    echo "Enabling trust samenet in pg_hba.conf..."
+    echo "host all all samenet trust" >> ${PG_CONFDIR}/pg_hba.conf
+  fi
 fi
 
 # allow remote connections to postgresql database
-cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
-host    all             all             0.0.0.0/0               md5
-EOF
+if ! grep -q "host \+all \+all \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
+  echo "host all all 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
+fi
 
 # allow replication connections to the database
 if [[ -n ${REPLICATION_USER} ]]; then
   if [[ ${PSQL_SSLMODE} == disable ]]; then
-    cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
-host    replication     $REPLICATION_USER       0.0.0.0/0               md5
-EOF
+    if ! grep -q "host \+replication \+$REPLICATION_USER \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
+      echo "host replication $REPLICATION_USER 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
+    fi
   else
-    cat >> ${PG_CONFDIR}/pg_hba.conf <<EOF
-hostssl replication     $REPLICATION_USER       0.0.0.0/0               md5
-EOF
+    if ! grep -q "hostssl \+replication \+$REPLICATION_USER \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
+      echo "hostssl replication $REPLICATION_USER 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
+    fi
   fi
 fi
 
 if [[ ${PSQL_MODE} == master ]]; then
   if [[ -n ${REPLICATION_USER} ]]; then
     echo "Supporting hot standby..."
-    cat >> ${PG_CONFDIR}/postgresql.conf <<EOF
-wal_level = hot_standby
-max_wal_senders = 3
-checkpoint_segments = 8
-wal_keep_segments = 8
-EOF
+    sudo -Hu ${PG_USER}  sed -i "s|^#wal_level = .*|wal_level = hot_standby|" ${PG_CONFDIR}/postgresql.conf
+    sudo -Hu ${PG_USER}  sed -i "s|^#max_wal_senders = .*|max_wal_senders = 3|" ${PG_CONFDIR}/postgresql.conf
+    sudo -Hu ${PG_USER}  sed -i "s|^#checkpoint_segments = .*|checkpoint_segments = 8|" ${PG_CONFDIR}/postgresql.conf
+    sudo -Hu ${PG_USER}  sed -i "s|^#wal_keep_segments = .*|wal_keep_segments = 8|" ${PG_CONFDIR}/postgresql.conf
   fi
 fi
 
