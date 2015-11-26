@@ -1,7 +1,8 @@
 FROM sameersbn/ubuntu:14.04.20151117
 MAINTAINER sameer@damagehead.com
 
-ENV PG_VERSION=9.4 \
+ENV PG_APP_HOME="/etc/docker-postgresql"\
+    PG_VERSION=9.4 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
@@ -21,6 +22,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
  && rm -rf ${PG_HOME} \
  && rm -rf /var/lib/apt/lists/*
 
+COPY runtime/ ${PG_APP_HOME}/
 COPY entrypoint.sh /sbin/entrypoint.sh
 RUN chmod 755 /sbin/entrypoint.sh
 
