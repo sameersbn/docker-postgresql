@@ -125,7 +125,7 @@ initialize_database() {
       slave|snapshot)
         # default params
         REPLICATION_PORT=${REPLICATION_PORT:-5432}
-        REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-disable}
+        REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-prefer}
 
         if [[ -z $REPLICATION_HOST ]]; then
           echo "ERROR! Cannot continue without the REPLICATION_HOST. Exiting..."
