@@ -3,7 +3,9 @@ set -e
 
 PSQL_MODE=${PSQL_MODE:-}
 PSQL_SSLMODE=${PSQL_SSLMODE:-}
-PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:-false}
+
+PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-$PSQL_TRUST_LOCALNET} # backward compatibility
+PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-false}
 
 REPLICATION_USER=${REPLICATION_USER:-}
 REPLICATION_PASS=${REPLICATION_PASS:-}
@@ -229,7 +231,7 @@ initialize_database() {
 }
 
 trust_localnet() {
-  if [[ ${PSQL_TRUST_LOCALNET} == true ]]; then
+  if [[ ${PG_TRUST_LOCALNET} == true ]]; then
     echo "Trusting connections from the local network..."
     set_hba_param "host all all samenet trust"
   fi

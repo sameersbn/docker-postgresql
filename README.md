@@ -150,13 +150,13 @@ will create a user *dbuser* with the password *dbpass*. It will also create a da
 
 The `DB_LOCALE` environment variable can be used to configure the locale used for database creation. Its default value is set to C.
 
-The `PSQL_TRUST_LOCALNET` environment variable can be used to configure postgres to trust connections on the same network.  This is handy for other containers to connect without authentication. To enable this behavior, set `PSQL_TRUST_LOCALNET` to `true`.
+The `PG_TRUST_LOCALNET` environment variable can be used to configure postgres to trust connections on the same network.  This is handy for other containers to connect without authentication. To enable this behavior, set `PG_TRUST_LOCALNET` to `true`.
 
 For example,
 
 ```bash
 docker run --name postgresql -d \
-  -e 'PSQL_TRUST_LOCALNET=true' \
+  -e 'PG_TRUST_LOCALNET=true' \
   sameersbn/postgresql:9.4-8
 ```
 
@@ -176,7 +176,7 @@ Create a master instance
 
 ```bash
 docker run --name='psql-master' -it --rm \
-  -e 'PSQL_MODE=master' -e 'PSQL_TRUST_LOCALNET=true' \
+  -e 'PSQL_MODE=master' -e 'PG_TRUST_LOCALNET=true' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   -e 'DB_NAME=dbname' -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
   sameersbn/postgresql:9.4-8
@@ -187,7 +187,7 @@ Create a streaming replication instance
 ```bash
 docker run --name='psql-slave' -it --rm  \
   --link psql-master:psql-master  \
-  -e 'PSQL_MODE=slave' -e 'PSQL_TRUST_LOCALNET=true' \
+  -e 'PSQL_MODE=slave' -e 'PG_TRUST_LOCALNET=true' \
   -e 'REPLICATION_HOST=psql-master' -e 'REPLICATION_PORT=5432' \
   -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
   sameersbn/postgresql:9.4-8
