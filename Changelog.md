@@ -6,6 +6,7 @@
 - `PSQL_MODE` config parameter renamed to `REPLICATION_MODE`
 - `PSQL_SSLMODE` config parameter renamed to `REPLICATION_SSLMODE`
 - defined `/etc/postgresql/certs` as the mountpoint to install SSL key and certificate
+- added `PG_SSL` parameter to enable/disable SSL support
 
 **9.4-2**
 - added replication options

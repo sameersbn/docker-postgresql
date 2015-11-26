@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+PG_SSL=${PG_SSL:-}
 
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-$PSQL_TRUST_LOCALNET} # backward compatibility
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-false}
@@ -112,6 +113,25 @@ set_hba_param() {
   if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
     echo "${value}" >> ${PG_HBA_CONF}
   fi
+}
+
+configure_ssl() {
+  ## NOT SURE IF THIS IS A GOOD ALTERNATIVE TO ENABLE SSL SUPPORT BY DEFAULT ##
+  ## BECAUSE USERS WHO PULL A PREBUILT IMAGE WILL HAVE THE SAME CERTIFICATES ##
+  # if [[ ! -f ${PG_CERTDIR}/server.crt && ! -f ${PG_CERTDIR}/server.key ]]; then
+  #   if [[ -f /etc/ssl/certs/ssl-cert-snakeoil.pem && -f /etc/ssl/private/ssl-cert-snakeoil.key ]]; then
+  #     ln -sf /etc/ssl/certs/ssl-cert-snakeoil.pem ${PG_CERTDIR}/server.crt
+  #     ln -sf /etc/ssl/private/ssl-cert-snakeoil.key ${PG_CERTDIR}/server.key
+  #   fi
+  # fi
+
+  if [[ -f ${PG_CERTDIR}/server.crt && -f ${PG_CERTDIR}/server.key ]]; then
+    PG_SSL=${PG_SSL:-on}
+    set_postgresql_param "ssl_cert_file" "${PG_CERTDIR}/server.crt"
+    set_postgresql_param "ssl_key_file" "${PG_CERTDIR}/server.key"
+  fi
+  PG_SSL=${PG_SSL:-off}
+  set_postgresql_param "ssl" "${PG_SSL}"
 }
 
 configure_hot_standby() {
@@ -341,6 +361,7 @@ if [[ -z ${1} ]]; then
   create_rundir
 
   initialize_database
+  configure_ssl
   trust_localnet
 
   create_user
