@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-PSQL_SSLMODE=${PSQL_SSLMODE:-}
 
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-$PSQL_TRUST_LOCALNET} # backward compatibility
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-false}
@@ -12,6 +11,7 @@ REPLICATION_USER=${REPLICATION_USER:-}
 REPLICATION_PASS=${REPLICATION_PASS:-}
 REPLICATION_HOST=${REPLICATION_HOST:-}
 REPLICATION_PORT=${REPLICATION_PORT:-}
+REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-}
 
 DB_NAME=${DB_NAME:-}
 DB_USER=${DB_USER:-}
@@ -125,7 +125,7 @@ initialize_database() {
       slave|snapshot)
         # default params
         REPLICATION_PORT=${REPLICATION_PORT:-5432}
-        PSQL_SSLMODE=${PSQL_SSLMODE:-disable}
+        REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-disable}
 
         if [[ -z $REPLICATION_HOST ]]; then
           echo "ERROR! Cannot continue without the REPLICATION_HOST. Exiting..."
@@ -299,7 +299,7 @@ configure_recovery() {
       echo "Configuring recovery..."
       exec_as_postgres touch ${PG_RECOVERY_CONF}
       ( echo "standby_mode = 'on'";
-        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'";
+        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
         echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_RECOVERY_CONF}
     fi
   else
@@ -307,7 +307,7 @@ configure_recovery() {
     set_recovery_param "port"      "${REPLICATION_PORT}"
     set_recovery_param "user"      "${REPLICATION_USER}"
     set_recovery_param "password"  "${REPLICATION_PASS}"
-    set_recovery_param "sslmode"   "${PSQL_SSLMODE}"
+    set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
   fi
 }
 
