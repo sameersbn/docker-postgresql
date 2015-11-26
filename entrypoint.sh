@@ -1,31 +1,33 @@
 #!/bin/bash
 set -e
 
-# set this env variable to true to enable a line in the
-# pg_hba.conf file to trust samenet.  this can be used to connect
-# from other containers on the same host without authentication
+PSQL_MODE=${PSQL_MODE:-}
+PSQL_SSLMODE=${PSQL_SSLMODE:-}
 PSQL_TRUST_LOCALNET=${PSQL_TRUST_LOCALNET:-false}
-
-DB_NAME=${DB_NAME:-}
-DB_USER=${DB_USER:-}
-DB_PASS=${DB_PASS:-}
-DB_LOCALE=${DB_LOCALE:-C}
-DB_UNACCENT=${DB_UNACCENT:false}
-
-# by default postgresql will start up as a standalone instance.
-# set this environment variable to master, slave or snapshot to use replication features.
-# "snapshot" will create a point in time backup of a master instance.
-PSQL_MODE=${PSQL_MODE:-standalone}
 
 REPLICATION_USER=${REPLICATION_USER:-}
 REPLICATION_PASS=${REPLICATION_PASS:-}
 REPLICATION_HOST=${REPLICATION_HOST:-}
-REPLICATION_PORT=${REPLICATION_PORT:-5432}
+REPLICATION_PORT=${REPLICATION_PORT:-}
 
-# set this env variable to "require" to enable encryption and "verify-full" for verification.
-PSQL_SSLMODE=${PSQL_SSLMODE:-disable}
+DB_NAME=${DB_NAME:-}
+DB_USER=${DB_USER:-}
+DB_PASS=${DB_PASS:-}
 
-map_postgres_uid() {
+DB_LOCALE=${DB_LOCALE:-C}
+DB_UNACCENT=${DB_UNACCENT:-false}
+
+PG_CONF=${PG_DATADIR}/postgresql.conf
+PG_HBA_CONF=${PG_DATADIR}/pg_hba.conf
+PG_IDENT_CONF=${PG_DATADIR}/pg_ident.conf
+PG_RECOVERY_CONF=${PG_DATADIR}/recovery.conf
+
+## Execute command as PG_USER
+exec_as_postgres() {
+  sudo -HEu ${PG_USER} "$@"
+}
+
+map_uidgid() {
   USERMAP_ORIG_UID=$(id -u ${PG_USER})
   USERMAP_ORIG_GID=$(id -g ${PG_USER})
   USERMAP_GID=${USERMAP_GID:-${USERMAP_UID:-$USERMAP_ORIG_GID}}
@@ -33,202 +35,310 @@ map_postgres_uid() {
   if [[ ${USERMAP_UID} != ${USERMAP_ORIG_UID} ]] || [[ ${USERMAP_GID} != ${USERMAP_ORIG_GID} ]]; then
     echo "Adapting uid and gid for ${PG_USER}:${PG_USER} to $USERMAP_UID:$USERMAP_GID"
     groupmod -g ${USERMAP_GID} ${PG_USER}
-    sed -i -e "s/:${USERMAP_ORIG_UID}:${USERMAP_GID}:/:${USERMAP_UID}:${USERMAP_GID}:/" /etc/passwd
+    sed -i -e "s|:${USERMAP_ORIG_UID}:${USERMAP_GID}:|:${USERMAP_UID}:${USERMAP_GID}:|" /etc/passwd
   fi
 }
 
-create_data_dir() {
+locale_gen() {
+  if [[ $DB_LOCALE != C ]]; then
+    echo "Generating locale \"${DB_LOCALE}\"..."
+    locale-gen ${DB_LOCALE} >/dev/null
+  fi
+}
+
+create_datadir() {
+  echo "Initializing datadir..."
   mkdir -p ${PG_HOME}
-  chmod -R 0700 ${PG_HOME}
+  if [[ -d ${PG_DATADIR} ]]; then
+    find ${PG_DATADIR} -type f -exec chmod 0600 {} \;
+    find ${PG_DATADIR} -type d -exec chmod 0700 {} \;
+  fi
   chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 }
 
-create_log_dir() {
+create_logdir() {
+  echo "Initializing logdir..."
   mkdir -p ${PG_LOGDIR}
   chmod -R 1775 ${PG_LOGDIR}
   chown -R root:${PG_USER} ${PG_LOGDIR}
 }
 
-create_run_dir() {
+create_rundir() {
+  echo "Initializing rundir..."
   mkdir -p ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
   chmod -R 0755 ${PG_RUNDIR}
   chmod g+s ${PG_RUNDIR}
   chown -R ${PG_USER}:${PG_USER} ${PG_RUNDIR}
 }
 
-map_postgres_uid
-create_data_dir
-create_log_dir
-create_run_dir
-
-cd ${PG_HOME}
-
-# initialize PostgreSQL data directory
-if [[ ! -d ${PG_DATADIR} ]]; then
-  if [[ ${PSQL_MODE} == slave || ${PSQL_MODE} == snapshot ]]; then
-    echo "Replicating database..."
-    if [[ ${PSQL_MODE} == snapshot ]]; then
-      sudo -Hu ${PG_USER} \
-        PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-        -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -w -x -v -P
-    elif [[ ${PSQL_MODE} == slave ]]; then
-      # Setup streaming replication.
-      sudo -Hu ${PG_USER} \
-        PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
-        -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w -v -P
-      echo "Setting up hot standby configuration..."
-      sudo -Hu ${PG_USER} sed -i "s|^#hot_standby = .*|hot_standby = on|" ${PG_CONFDIR}/postgresql.conf
-      sudo -Hu ${PG_USER} touch ${PG_DATADIR}/recovery.conf
-      ( echo "standby_mode = 'on'";
-        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'";
-        echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_DATADIR}/recovery.conf
-    fi
-
-  else
-    # check if we need to perform data migration
-    PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | sort -r | head -n1 | cut -d'/' -f5)
-
-    if [[ $DB_LOCALE != C ]]; then
-      echo "Generating required locale \"${DB_LOCALE}\"..."
-      locale-gen ${DB_LOCALE} >/dev/null
-    fi
-
-    echo "Initializing database..."
-    sudo -Hu ${PG_USER} ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-      --username=${PG_USER} --encoding=unicode --locale=${DB_LOCALE} --auth=trust >/dev/null
-  fi
-fi
-
-if [[ -n ${PG_OLD_VERSION} ]]; then
-  echo "Migrating postgresql ${PG_OLD_VERSION} data..."
-  PG_OLD_CONFDIR="${PG_HOME}/${PG_OLD_VERSION}/main"
-  PG_OLD_BINDIR="/usr/lib/postgresql/${PG_OLD_VERSION}/bin"
-  PG_OLD_DATADIR="${PG_HOME}/${PG_OLD_VERSION}/main"
-
-  # backup ${PG_OLD_DATADIR} to avoid data loss
-  PG_BKP_SUFFIX=$(date +%Y%m%d%H%M%S)
-  echo "Backing up ${PG_OLD_DATADIR} to ${PG_OLD_DATADIR}.${PG_BKP_SUFFIX}..."
-  cp -a ${PG_OLD_DATADIR} ${PG_OLD_DATADIR}.${PG_BKP_SUFFIX}
-
-  echo "Installing postgresql-${PG_OLD_VERSION}..."
-  apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install postgresql-${PG_OLD_VERSION} postgresql-client-${PG_OLD_VERSION}
-  rm -rf /var/lib/apt/lists/*
-
-  # migrate ${PG_OLD_VERSION} data
-  echo "Migration in progress. This could take a while, please be patient..."
-  sudo -Hu ${PG_USER} ${PG_BINDIR}/pg_upgrade \
-    -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
-    -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
-    -o "-c config_file=${PG_OLD_CONFDIR}/postgresql.conf --hba_file=${PG_OLD_CONFDIR}/pg_hba.conf --ident_file=${PG_OLD_CONFDIR}/pg_ident.conf" \
-    -O "-c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf" >/dev/null
-fi
-
-if [[ ${PSQL_SSLMODE} == disable ]]; then
-  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = off|" ${PG_CONFDIR}/postgresql.conf
-else
-  sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*ssl = .*|ssl = on|" ${PG_CONFDIR}/postgresql.conf
-fi
-
-# Change DSM from `posix' to `sysv' if we are inside an lx-brand container
-if [[ $(uname -v) == "BrandZ virtual linux" ]]; then
-  sed 's/\(dynamic_shared_memory_type = \)posix/\1sysv/' -i ${PG_CONFDIR}/postgresql.conf
-fi
-
-# listen on all interfaces
-sudo -Hu ${PG_USER} sed -i "s|^[#]*[ ]*listen_addresses = .*|listen_addresses = '*'|" ${PG_CONFDIR}/postgresql.conf
-
-if [[ ${PSQL_TRUST_LOCALNET} == true ]]; then
-  if ! grep -q "host \+all \+all \+samenet \+trust" ${PG_CONFDIR}/pg_hba.conf; then
-    echo "Enabling trust samenet in pg_hba.conf..."
-    echo "host all all samenet trust" >> ${PG_CONFDIR}/pg_hba.conf
-  fi
-fi
-
-# allow remote connections to postgresql database
-if ! grep -q "host \+all \+all \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
-  echo "host all all 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
-fi
-
-# allow replication connections to the database
-if [[ -n ${REPLICATION_USER} ]]; then
-  if [[ ${PSQL_SSLMODE} == disable ]]; then
-    if ! grep -q "host \+replication \+$REPLICATION_USER \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
-      echo "host replication $REPLICATION_USER 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
-    fi
-  else
-    if ! grep -q "hostssl \+replication \+$REPLICATION_USER \+0.0.0.0/0 \+md5" ${PG_CONFDIR}/pg_hba.conf; then
-      echo "hostssl replication $REPLICATION_USER 0.0.0.0/0 md5" >> ${PG_CONFDIR}/pg_hba.conf
+set_postgresql_param() {
+  local key=${1}
+  local value=${2}
+  if [[ -n ${value} ]]; then
+    local current=$(exec_as_postgres sed -n -e "s/^\("${key}" = '\)\([^ ']*\)\(.*\)$/\2/p" ${PG_CONF})
+    if [[ "${current}" != "${value}" ]]; then
+      echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
+      exec_as_postgres sed -i "s|^[#]*[ ]*"${key}" = .*|"${key}" = '"${value}"'|" ${PG_CONF}
     fi
   fi
-fi
+}
 
-if [[ ${PSQL_MODE} == master ]]; then
-  if [[ -n ${REPLICATION_USER} ]]; then
-    echo "Supporting hot standby..."
-    sudo -Hu ${PG_USER}  sed -i "s|^#wal_level = .*|wal_level = hot_standby|" ${PG_CONFDIR}/postgresql.conf
-    sudo -Hu ${PG_USER}  sed -i "s|^#max_wal_senders = .*|max_wal_senders = 3|" ${PG_CONFDIR}/postgresql.conf
-    sudo -Hu ${PG_USER}  sed -i "s|^#checkpoint_segments = .*|checkpoint_segments = 8|" ${PG_CONFDIR}/postgresql.conf
-    sudo -Hu ${PG_USER}  sed -i "s|^#wal_keep_segments = .*|wal_keep_segments = 8|" ${PG_CONFDIR}/postgresql.conf
-  fi
-fi
-
-# Hot standby (slave and snapshot) servers can ignore the following code.
-if [[ ${PSQL_MODE} == standalone || ${PSQL_MODE} == master ]]; then
-  if [[ -n ${REPLICATION_USER} ]]; then
-    if [[ -z ${REPLICATION_PASS} ]]; then
-      echo ""
-      echo "WARNING: "
-      echo "  Please specify a password for replication user \"${REPLICATION_USER}\". Skipping user creation..."
-      echo ""
-      DB_USER=
-    else
-      echo "Creating user \"${REPLICATION_USER}\"..."
-      echo "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" |
-        sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} \
-          -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf >/dev/null
+set_recovery_param() {
+  local key=${1}
+  local value=${2}
+  if [[ -n ${value} ]]; then
+    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\("${key}"=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
+    if [[ "${current}" != "${value}" ]]; then
+      echo "Updating primary_conninfo ${key}..."
+      exec_as_postgres sed -i "s|"${key}"=[^ ']*|"${key}"="${value}"|" ${PG_RECOVERY_CONF}
     fi
   fi
+}
 
+set_hba_param() {
+  local value=${1}
+  if ! grep -q "$(sed "s| | \\\+|g" <<< ${value})" ${PG_HBA_CONF}; then
+    echo "${value}" >> ${PG_HBA_CONF}
+  fi
+}
+
+configure_hot_standby() {
+  case ${PSQL_MODE} in
+    slave|snapshot) ;;
+    *)
+      echo "Configuring hot standby..."
+      set_postgresql_param "wal_level" "hot_standby"
+      set_postgresql_param "max_wal_senders" "16"
+      set_postgresql_param "checkpoint_segments" "8"
+      set_postgresql_param "wal_keep_segments" "32"
+      set_postgresql_param "hot_standby" "on"
+      ;;
+  esac
+}
+
+initialize_database() {
+  if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
+    case ${PSQL_MODE} in
+      slave|snapshot)
+        # default params
+        REPLICATION_PORT=${REPLICATION_PORT:-5432}
+        PSQL_SSLMODE=${PSQL_SSLMODE:-disable}
+
+        if [[ -z $REPLICATION_HOST ]]; then
+          echo "ERROR! Cannot continue without the REPLICATION_HOST. Exiting..."
+          exit 1
+        fi
+
+        if [[ -z $REPLICATION_USER ]]; then
+          echo "ERROR! Cannot continue without the REPLICATION_USER. Exiting..."
+          exit 1
+        fi
+
+        if [[ -z $REPLICATION_PASS ]]; then
+          echo "ERROR! Cannot continue without the REPLICATION_PASS. Exiting..."
+          exit 1
+        fi
+
+        echo -n "Waiting for $REPLICATION_HOST to accept connections (60s timeout)"
+        timeout=60
+        while ! ${PG_BINDIR}/pg_isready -h $REPLICATION_HOST -p $REPLICATION_PORT -t 1 >/dev/null 2>&1
+        do
+          timeout=$(expr $timeout - 1)
+          if [[ $timeout -eq 0 ]]; then
+            echo "Timeout! Exiting..."
+            exit 1
+          fi
+          echo -n "."
+          sleep 1
+        done
+        echo
+
+        case ${PSQL_MODE} in
+          slave)
+            echo "Replicating initial data from $REPLICATION_HOST..."
+            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w >/dev/null
+            ;;
+          snapshot)
+            echo "Generating a snapshot data on $REPLICATION_HOST..."
+            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+        esac
+        ;;
+      *)
+        echo "Initializing database..."
+        PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | grep -v $PG_VERSION | sort -r | head -n1 | cut -d'/' -f5)
+        if [[ -n ${PG_OLD_VERSION} ]]; then
+          echo "‣ Migrating PostgreSQL ${PG_OLD_VERSION} data to ${PG_VERSION}..."
+
+          # protect the existing data from being altered by apt-get
+          mv ${PG_HOME}/${PG_OLD_VERSION} ${PG_HOME}/${PG_OLD_VERSION}.migrating
+
+          echo "‣ Installing PostgreSQL ${PG_OLD_VERSION}..."
+          if ! ( apt-get update &&  DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql-${PG_OLD_VERSION} postgresql-client-${PG_OLD_VERSION} ) >/dev/null; then
+            echo "ERROR! Failed to install PostgreSQL ${PG_OLD_VERSION}. Exiting..."
+            # first move the old data back
+            rm -rf ${PG_HOME}/${PG_OLD_VERSION}
+            mv ${PG_HOME}/${PG_OLD_VERSION}.migrating ${PG_HOME}/${PG_OLD_VERSION}
+            exit 1
+          fi
+          rm -rf /var/lib/apt/lists/*
+
+          # we're ready to migrate, move back the old data and remove the trap
+          rm -rf ${PG_HOME}/${PG_OLD_VERSION}
+          mv ${PG_HOME}/${PG_OLD_VERSION}.migrating ${PG_HOME}/${PG_OLD_VERSION}
+        fi
+
+        exec_as_postgres ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
+          --username=${PG_USER} --encoding=unicode --locale=${DB_LOCALE} --auth=trust >/dev/null
+
+        if [[ -n ${PG_OLD_VERSION} ]]; then
+          PG_OLD_BINDIR=/usr/lib/postgresql/${PG_OLD_VERSION}/bin
+          PG_OLD_DATADIR=${PG_HOME}/${PG_OLD_VERSION}/main
+          PG_OLD_CONF=${PG_OLD_DATADIR}/postgresql.conf
+          PG_OLD_HBA_CONF=${PG_OLD_DATADIR}/pg_hba.conf
+          PG_OLD_IDENT_CONF=${PG_OLD_DATADIR}/pg_ident.conf
+
+          echo -n "‣ Migration in progress. Please be patient..."
+          exec_as_postgres ${PG_BINDIR}/pg_upgrade \
+            -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
+            -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
+            -o "-c config_file=${PG_OLD_CONF} --hba_file=${PG_OLD_HBA_CONF} --ident_file=${PG_OLD_IDENT_CONF}" \
+            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}" >/dev/null
+          echo
+        fi
+        ;;
+    esac
+
+    # configure path to data_directory
+    set_postgresql_param "data_directory" "${PG_DATADIR}"
+
+    # listen on all interfaces
+    set_postgresql_param "listen_addresses" "*"
+
+    # allow remote connections to postgresql database
+    set_hba_param "host all all 0.0.0.0/0 md5"
+
+    configure_hot_standby
+
+    # Change DSM from `posix' to `sysv' if we are inside an lx-brand container
+    if [[ $(uname -v) == "BrandZ virtual linux" ]]; then
+      set_postgresql_param "dynamic_shared_memory_type" "sysv"
+    fi
+  fi
+}
+
+trust_localnet() {
+  if [[ ${PSQL_TRUST_LOCALNET} == true ]]; then
+    echo "Trusting connections from the local network..."
+    set_hba_param "host all all samenet trust"
+  fi
+}
+
+create_user() {
   if [[ -n ${DB_USER} ]]; then
     if [[ -z ${DB_PASS} ]]; then
-      echo ""
-      echo "WARNING: "
-      echo "  Please specify a password for \"${DB_USER}\". Skipping user creation..."
-      echo ""
-      DB_USER=
-    else
-      echo "Creating user \"${DB_USER}\"..."
-      echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" |
-        sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} \
-          -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf >/dev/null
+      echo "ERROR! Please specify a password for DB_USER in DB_PASS. Exiting..."
+      exit 1
     fi
+    echo "Creating database user: ${DB_USER}"
+    echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" | \
+      exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
   fi
+}
 
+create_database() {
   if [[ -n ${DB_NAME} ]]; then
-    for db in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
-      echo "Creating database \"${db}\"..."
-      echo "CREATE DATABASE \"${db}\";" | \
-        sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} \
-          -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf >/dev/null
+    echo -n "Creating database(s): "
+    for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
+      echo -n "${database} "
+      echo "CREATE DATABASE \"${database}\";" | \
+        exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
 
       if [[ ${DB_UNACCENT} == true ]]; then
-        echo "Installing unaccent extension..."
         echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
-          sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single ${db} -D ${PG_DATADIR} \
-            -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf >/dev/null
+          exec_as_postgres ${PG_BINDIR}/postgres --single ${database} -D ${PG_DATADIR} >/dev/null 2>&1
       fi
 
       if [[ -n ${DB_USER} ]]; then
-        echo "Granting access to database \"${db}\" for user \"${DB_USER}\"..."
-        echo "GRANT ALL PRIVILEGES ON DATABASE \"${db}\" to \"${DB_USER}\";" |
-          sudo -Hu ${PG_USER} ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} \
-            -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf >/dev/null
+        echo "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" | \
+          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
       fi
     done
+    echo
   fi
+}
+
+create_replication_user() {
+  case $PSQL_MODE in
+    slave|snapshot) ;; # replication user can only be created on the master
+    *)
+      if [[ -n ${REPLICATION_USER} ]]; then
+        if [[ -z ${REPLICATION_PASS} ]]; then
+          echo "ERROR! Please specify a password for REPLICATION_USER in REPLICATION_PASS. Exiting..."
+          exit 1
+        fi
+
+        echo "Creating replication user: ${REPLICATION_USER}"
+        echo "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" | \
+          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+
+        set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
+      fi
+      ;;
+  esac
+}
+
+configure_recovery() {
+  if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
+    if [[ ${PSQL_MODE} == slave ]]; then
+      # initialize recovery.conf on the firstrun (slave only)
+      echo "Configuring recovery..."
+      exec_as_postgres touch ${PG_RECOVERY_CONF}
+      ( echo "standby_mode = 'on'";
+        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${PSQL_SSLMODE}'";
+        echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_RECOVERY_CONF}
+    fi
+  else
+    set_recovery_param "host"      "${REPLICATION_HOST}"
+    set_recovery_param "port"      "${REPLICATION_PORT}"
+    set_recovery_param "user"      "${REPLICATION_USER}"
+    set_recovery_param "password"  "${REPLICATION_PASS}"
+    set_recovery_param "sslmode"   "${PSQL_SSLMODE}"
+  fi
+}
+
+# allow arguments to be passed to postgres
+if [[ ${1:0:1} = '-' ]]; then
+  EXTRA_ARGS="$@"
+  set --
+elif [[ ${1} == postgres || ${1} == $(which postgres) ]]; then
+  EXTRA_ARGS="${@:2}"
+  set --
 fi
 
-echo "Starting PostgreSQL server..."
-exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} \
-  -c config_file=${PG_CONFDIR}/postgresql.conf --hba_file=${PG_CONFDIR}/pg_hba.conf --ident_file=${PG_CONFDIR}/pg_ident.conf
+# default behaviour is to launch postgres
+if [[ -z ${1} ]]; then
+
+  map_uidgid
+  locale_gen
+
+  create_datadir
+  create_logdir
+  create_rundir
+
+  initialize_database
+  trust_localnet
+
+  create_user
+  create_database
+  create_replication_user
+  configure_recovery
+
+  echo "Starting PostgreSQL ${PG_VERSION}..."
+  exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
+    --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} ${EXTRA_ARGS}
+else
+  exec "$@"
+fi
+

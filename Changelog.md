@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- complete rewrite
+
 **9.4-2**
 - added replication options
 
