@@ -59,6 +59,15 @@ create_datadir() {
   chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 }
 
+create_certdir() {
+  echo "Initializing certdir..."
+  mkdir -p ${PG_CERTDIR}
+  [[ -f ${PG_CERTDIR}/server.crt ]] && chmod 0644 ${PG_CERTDIR}/server.crt
+  [[ -f ${PG_CERTDIR}/server.key ]] && chmod 0640 ${PG_CERTDIR}/server.key
+  chmod 0755 ${PG_CERTDIR}
+  chown -R root:${PG_USER} ${PG_CERTDIR}
+}
+
 create_logdir() {
   echo "Initializing logdir..."
   mkdir -p ${PG_LOGDIR}
@@ -327,6 +336,7 @@ if [[ -z ${1} ]]; then
   locale_gen
 
   create_datadir
+  create_certdir
   create_logdir
   create_rundir
 
