@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-PSQL_MODE=${PSQL_MODE:-}
 PSQL_SSLMODE=${PSQL_SSLMODE:-}
 
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-$PSQL_TRUST_LOCALNET} # backward compatibility
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-false}
 
+REPLICATION_MODE=${REPLICATION_MODE:-$PSQL_MODE} # backward compatibility
+REPLICATION_MODE=${REPLICATION_MODE:-}
 REPLICATION_USER=${REPLICATION_USER:-}
 REPLICATION_PASS=${REPLICATION_PASS:-}
 REPLICATION_HOST=${REPLICATION_HOST:-}
@@ -105,7 +106,7 @@ set_hba_param() {
 }
 
 configure_hot_standby() {
-  case ${PSQL_MODE} in
+  case ${REPLICATION_MODE} in
     slave|snapshot) ;;
     *)
       echo "Configuring hot standby..."
@@ -120,7 +121,7 @@ configure_hot_standby() {
 
 initialize_database() {
   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
-    case ${PSQL_MODE} in
+    case ${REPLICATION_MODE} in
       slave|snapshot)
         # default params
         REPLICATION_PORT=${REPLICATION_PORT:-5432}
@@ -155,7 +156,7 @@ initialize_database() {
         done
         echo
 
-        case ${PSQL_MODE} in
+        case ${REPLICATION_MODE} in
           slave)
             echo "Replicating initial data from $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
@@ -272,7 +273,7 @@ create_database() {
 }
 
 create_replication_user() {
-  case $PSQL_MODE in
+  case $REPLICATION_MODE in
     slave|snapshot) ;; # replication user can only be created on the master
     *)
       if [[ -n ${REPLICATION_USER} ]]; then
@@ -293,7 +294,7 @@ create_replication_user() {
 
 configure_recovery() {
   if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
-    if [[ ${PSQL_MODE} == slave ]]; then
+    if [[ ${REPLICATION_MODE} == slave ]]; then
       # initialize recovery.conf on the firstrun (slave only)
       echo "Configuring recovery..."
       exec_as_postgres touch ${PG_RECOVERY_CONF}

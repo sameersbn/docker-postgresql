@@ -3,6 +3,7 @@
 **latest**
 - complete rewrite
 - `PSQL_TRUST_LOCALNET` config parameter renamed to `PG_TRUST_LOCALNET`
+- `PSQL_MODE` config parameter renamed to `REPLICATION_MODE`
 
 **9.4-2**
 - added replication options
