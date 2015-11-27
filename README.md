@@ -19,8 +19,8 @@
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
   - [Creating a snapshot](#creating-a-snapshot)
   - [Creating a backup](#creating-a-backup)
-  - [Logs](#logs)
   - [Command-line arguments](#command-line-arguments)
+  - [Logs](#logs)
   - [UID/GID mapping](#uid-gid-mapping)
 - [Maintenance](#maintenance)
   - [Upgrading](#upgrading)
@@ -294,6 +294,17 @@ docker run --name postgresql-backup -it --rm \
 
 Once the backup is generated, the container will exit and the backup of the master data will be available at `/srv/docker/backups/postgresql.XXXXXXXXXXXX/`. Restoring the backup involves starting a container with the data in `/srv/docker/backups/postgresql.XXXXXXXXXXXX`.
 
+## Command-line arguments
+
+You can customize the launch command of PostgreSQL server by specifying arguments for `postgres` on the `docker run` command. For example the following command enables connection logging:
+
+```bash
+docker run --name postgresql -itd --restart always \
+  sameersbn/postgresql:9.4-8 -c log_connections=on
+```
+
+Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
+
 ## Logs
 
 By default the PostgreSQL server logs are sent to the standard output. Using the [Command-line arguments](#command-line-arguments) feature you can configure the PostgreSQL server to send the log output to a file using the `-c logging_collector=on` argument:
@@ -308,17 +319,6 @@ To access the PostgreSQL logs you can use `docker exec`. For example:
 ```bash
 docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.4-main.log
 ```
-
-## Command-line arguments
-
-You can customize the launch command of PostgreSQL server by specifying arguments for `postgres` on the `docker run` command. For example the following command enables connection logging:
-
-```bash
-docker run --name postgresql -itd --restart always \
-  sameersbn/postgresql:9.4-8 -c log_connections=on
-```
-
-Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
 
 # UID/GID mapping
 
