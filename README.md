@@ -8,7 +8,6 @@
 - [Getting started](#getting-started)
   - [Installation](#installation)
   - [Quickstart](#quickstart)
-  - [Command-line arguments](#command-line-arguments)
   - [Persistence](#persistence)
   - [Setting the default locale](#setting-the-default-locale)
   - [Trusting local connections](#trusting-local-connections)
@@ -21,6 +20,7 @@
   - [Creating a snapshot](#creating-a-snapshot)
   - [Creating a backup](#creating-a-backup)
   - [Logs](#logs)
+  - [Command-line arguments](#command-line-arguments)
   - [UID/GID mapping](#uid-gid-mapping)
 - [Maintenance](#maintenance)
   - [Upgrading](#upgrading)
@@ -88,17 +88,6 @@ docker exec -it postgresql sudo -u postgres psql
 ```
 
 *Alternatively, you can use the sample [docker-compose.yml](docker-compose.yml) file to start the container using [Docker Compose](https://docs.docker.com/compose/)*
-
-## Command-line arguments
-
-You can customize the launch command of PostgreSQL server by specifying arguments for `postgres` on the `docker run` command. For example the following command enables connection logging:
-
-```bash
-docker run --name postgresql -itd --restart always \
-  sameersbn/postgresql:9.4-8 -c log_connections=on
-```
-
-Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
 
 ## Persistence
 
@@ -319,6 +308,17 @@ To access the PostgreSQL logs you can use `docker exec`. For example:
 ```bash
 docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.4-main.log
 ```
+
+## Command-line arguments
+
+You can customize the launch command of PostgreSQL server by specifying arguments for `postgres` on the `docker run` command. For example the following command enables connection logging:
+
+```bash
+docker run --name postgresql -itd --restart always \
+  sameersbn/postgresql:9.4-8 -c log_connections=on
+```
+
+Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
 
 # UID/GID mapping
 
