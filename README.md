@@ -19,6 +19,7 @@
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
   - [Creating a snapshot](#creating-a-snapshot)
+  - [Creating a backup](#creating-a-backup)
   - [Logs](#logs)
   - [UID/GID mapping](#uid-gid-mapping)
 - [Maintenance](#maintenance)
@@ -219,7 +220,7 @@ docker run --name postgresql -itd --restart always \
 > - No changes will be made if the user already exists
 > - Only a single user can be created at each launch
 
-*It is a good idea to create a replication user even if you are not going to use it as it will allow you to setup slave nodes and/or generate snapshots when the need arises.*
+*It is a good idea to create a replication user even if you are not going to use it as it will allow you to setup slave nodes and/or generate snapshots and backups when the need arises.*
 
 ## Setting up a replication cluster
 
@@ -283,6 +284,26 @@ docker run --name postgresql-snapshot -itd --restart always \
 The difference between a slave and a snapshot is that a slave is read-only and updated whenever the master data is updated (streaming replication), while a snapshot is read-write and is not updated after the initial snapshot of the data on the master.
 
 This is useful for developers to quickly snapshot the current state of a live database and use it for development/debugging purposes without altering the database on the live instance.
+
+## Creating a backup
+
+Just as the case of setting up a slave node or generating a snapshot, you can also create a backup of the data on the master master by specifying `REPLICATION_MODE=backup`.
+
+> The backups are generated using [pg_basebackup](http://www.postgresql.org/docs/9.4/static/app-pgbasebackup.html) using the replication protocol.
+
+Once the master node is created as specified in [Setting up a replication cluster](#setting-up-a-replication-cluster), you can create a point-in-time backup using:
+
+```bash
+docker run --name postgresql-backup -it --rm \
+  --link postgresql-master:master \
+  --env 'REPLICATION_MODE=backup' -e 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
+  --volume /srv/docker/backups/postgresql.$(date +%Y%m%d%H$M%S):/var/lib/postgresql \
+  sameersbn/postgresql:9.4-8
+```
+
+Once the backup is generated, the container will exit and the backup of the master data will be available at `/srv/docker/backups/postgresql.XXXXXXXXXXXX/`. Restoring the backup involves starting a container with the data in `/srv/docker/backups/postgresql.XXXXXXXXXXXX`.
 
 ## Logs
 

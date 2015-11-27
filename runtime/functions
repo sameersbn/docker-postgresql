@@ -117,7 +117,7 @@ configure_ssl() {
 
 configure_hot_standby() {
   case ${REPLICATION_MODE} in
-    slave|snapshot) ;;
+    slave|snapshot|backup) ;;
     *)
       echo "Configuring hot standby..."
       set_postgresql_param "wal_level" "hot_standby"
@@ -132,7 +132,7 @@ configure_hot_standby() {
 initialize_database() {
   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
     case ${REPLICATION_MODE} in
-      slave|snapshot)
+      slave|snapshot|backup)
         # default params
         REPLICATION_PORT=${REPLICATION_PORT:-5432}
         REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-prefer}
@@ -176,6 +176,12 @@ initialize_database() {
             echo "Generating a snapshot data on $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
               -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+            ;;
+          backup)
+            echo "Backing up data on $REPLICATION_HOST..."
+            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+              -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+            exit 0
             ;;
         esac
         ;;
@@ -289,7 +295,7 @@ create_database() {
 
 create_replication_user() {
   case $REPLICATION_MODE in
-    slave|snapshot) ;; # replication user can only be created on the master
+    slave|snapshot|backup) ;; # replication user can only be created on the master
     *)
       if [[ -n ${REPLICATION_USER} ]]; then
         if [[ -z ${REPLICATION_PASS} ]]; then

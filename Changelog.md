@@ -9,6 +9,7 @@
 - added `PG_SSL` parameter to enable/disable SSL support
 - `DB_LOCALE` config parameter renamed to `PG_LOCALE`
 - complete rewrite of the README
+- add support for creating backups using `pg_basebackup`
 
 **9.4-2**
 - added replication options
