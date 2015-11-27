@@ -1,61 +1,59 @@
-[![Circle CI](https://circleci.com/gh/sameersbn/docker-postgresql.svg?style=svg)](https://circleci.com/gh/sameersbn/docker-postgresql) [![Docker Repository on Quay.io](https://quay.io/repository/sameersbn/postgresql/status "Docker Repository on Quay.io")](https://quay.io/repository/sameersbn/postgresql)
+[![Circle CI](https://circleci.com/gh/sameersbn/docker-postgresql.svg?style=shield)](https://circleci.com/gh/sameersbn/docker-postgresql) [![Docker Repository on Quay.io](https://quay.io/repository/sameersbn/postgresql/status "Docker Repository on Quay.io")](https://quay.io/repository/sameersbn/postgresql)
 
-# Table of Contents
+# sameersbn/postgresql:9.4-8
 
 - [Introduction](#introduction)
-- [Changelog](Changelog.md)
-- [Contributing](#contributing)
-- [Reporting Issues](#reporting-issues)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Persistence](#persistence)
-- [Creating User and Database at Launch](#creating-user-and-database-at-launch)
-- [Creating a Snapshot or Slave Database](#creating-a-snapshot-or-slave-database)
-- [Host UID / GID Mapping](#host-uid--gid-mapping)
-- [Upgrading](#upgrading)
-- [Shell Access](#shell-access)
+  - [Contributing](#contributing)
+  - [Issues](#issues)
+- [Getting started](#getting-started)
+  - [Installation](#installation)
+  - [Quickstart](#quickstart)
+  - [Command-line arguments](#command-line-arguments)
+  - [Persistence](#persistence)
+  - [Setting the default locale](#setting-the-default-locale)
+  - [Trusting local connections](#trusting-local-connections)
+  - [Creating database user](#creating-database-user)
+  - [Creating databases](#creating-databases)
+  - [Enabling unaccent extension](#enabling-unaccent-extension)
+  - [Granting user access to a database](#granting-user-access-to-a-database)
+  - [Creating replication user](#creating-replication-user)
+  - [Setting up a replication cluster](#setting-up-a-replication-cluster)
+  - [Creating a snapshot](#creating-a-snapshot)
+  - [Logs](#logs)
+  - [UID/GID mapping](#uid-gid-mapping)
+- [Maintenance](#maintenance)
+  - [Upgrading](#upgrading)
+  - [Shell Access](#shell-access)
 
 # Introduction
 
-Dockerfile to build a PostgreSQL container image which can be linked to other containers.
+`Dockerfile` to create a [Docker](https://www.docker.com/) container image for [PostgreSQL](http://postgresql.org/).
 
-# Contributing
+PostgreSQL is an object-relational database management system (ORDBMS) with an emphasis on extensibility and standards-compliance [[source](https://en.wikipedia.org/wiki/PostgreSQL)].
+
+## Contributing
 
 If you find this image useful here's how you can help:
 
-- Send a Pull Request with your awesome new features and bug fixes
-- Help new users with [Issues](https://github.com/sameersbn/docker-postgresql/issues) they may encounter
+- Send a pull request with your awesome features and bug fixes
+- Help users resolve their [issues](../../issues?q=is%3Aopen+is%3Aissue).
 - Support the development of this image with a [donation](http://www.damagehead.com/donate/)
 
-# Reporting Issues
+## Issues
 
-Docker is a relatively new project and is being actively developed and tested by a thriving community of developers and testers and every release of Docker features many enhancements and bugfixes.
+Before reporting your issue please try updating Docker to the latest version and check if it resolves the issue. Refer to the Docker [installation guide](https://docs.docker.com/installation) for instructions.
 
-Given the nature of the development and release cycle it is very important that you have the latest version of docker installed because any issue that you encounter might have already been fixed with a newer docker release.
+SELinux users should try disabling SELinux using the command `setenforce 0` to see if it resolves the issue.
 
-For ubuntu users I suggest [installing docker](https://docs.docker.com/installation/ubuntulinux/) using docker's own package repository since the version of docker packaged in the ubuntu repositories are a little dated.
+If the above recommendations do not help then [report your issue](../../issues/new) along with the following information:
 
-Here is the shortform of the installation of an updated version of docker on ubuntu.
+- Output of the `docker version` and `docker info` commands
+- The `docker run` command or `docker-compose.yml` used to start the image. Mask out the sensitive bits.
+- Please state if you are using [Boot2Docker](http://www.boot2docker.io), [VirtualBox](https://www.virtualbox.org), etc.
 
-```bash
-sudo apt-get purge docker.io
-curl -s https://get.docker.io/ubuntu/ | sudo sh
-sudo apt-get update
-sudo apt-get install lxc-docker
-```
+# Getting started
 
-Fedora and RHEL/CentOS users should try disabling selinux with `setenforce 0` and check if resolves the issue. If it does than there is not much that I can help you with. You can either stick with selinux disabled (not recommended by redhat) or switch to using ubuntu.
-
-If using the latest docker version and/or disabling selinux does not fix the issue then please file a issue request on the [issues](https://github.com/sameersbn/docker-postgresql/issues) page.
-
-In your issue report please make sure you provide the following information:
-
-- The host distribution and release version.
-- Output of the `docker version` command
-- Output of the `docker info` command
-- The `docker run` command you used to run the image (mask out the sensitive bits).
-
-# Installation
+## Installation
 
 Automated builds of the image are available on [Dockerhub](https://hub.docker.com/r/sameersbn/postgresql) and is the recommended method of installation.
 
@@ -65,203 +63,294 @@ Automated builds of the image are available on [Dockerhub](https://hub.docker.co
 docker pull sameersbn/postgresql:9.4-8
 ```
 
-Alternately you can build the image yourself.
+Alternatively you can build the image yourself.
 
 ```bash
 docker build -t sameersbn/postgresql github.com/sameersbn/docker-postgresql
 ```
 
-# Quick Start
+## Quickstart
 
-Run the postgresql image
+Start PostgreSQL using:
 
 ```bash
-docker run --name postgresql -d sameersbn/postgresql:9.4-8
+docker run --name postgresql -itd --restart always \
+  --publish 5432:5432 \
+  --volume /srv/docker/postgresql:/var/lib/postgresql \
+  sameersbn/postgresql:9.4-8
 ```
 
-The simplest way to login to the postgresql container as the administrative `postgres` user is to use the `docker exec` command to attach a new process to the running container and connect to the postgresql server over the unix socket.
+Login to the PostgreSQL server using:
 
 ```bash
 docker exec -it postgresql sudo -u postgres psql
 ```
 
-# Persistence
+*Alternatively, you can use the sample [docker-compose.yml](docker-compose.yml) file to start the container using [Docker Compose](https://docs.docker.com/compose/)*
 
-For data persistence a volume should be mounted at `/var/lib/postgresql`.
+## Command-line arguments
 
-SELinux users are also required to change the security context of the mount point so that it plays nicely with selinux.
+You can customize the launch command of PostgreSQL server by specifying arguments for `postgres` on the `docker run` command. For example the following command enables connection logging:
 
 ```bash
-mkdir -p /opt/postgresql/data
-sudo chcon -Rt svirt_sandbox_file_t /opt/postgresql/data
+docker run --name postgresql -itd --restart always \
+  sameersbn/postgresql:9.4-8 -c log_connections=on
 ```
 
-The updated run command looks like this.
+Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
+
+## Persistence
+
+For PostgreSQL to preserve its state across container shutdown and startup you should mount a volume at `/var/lib/postgresql`.
+
+> *The [Quickstart](#quickstart) command already mounts a volume for persistence.*
+
+SELinux users should update the security context of the host mountpoint so that it plays nicely with Docker:
 
 ```bash
-docker run --name postgresql -d \
-  -v /opt/postgresql/data:/var/lib/postgresql sameersbn/postgresql:9.4-8
+mkdir -p /srv/docker/postgresql
+chcon -Rt svirt_sandbox_file_t /srv/docker/postgresql
 ```
 
-This will make sure that the data stored in the database is not lost when the image is stopped and started again.
+## Setting the default locale
 
-# Creating User and Database at Launch
+*This is an experimental option. Please share your feedback and/or suggestions*
 
-The image allows you to create a user and database at launch time.
+Using the `PG_LOCALE` variable you can set the default [locale](http://www.postgresql.org/docs/9.4/static/locale.html) for the database cluster. The default value of this variable is `PG_LOCALE=C`.
 
-To create a new user you should specify the `DB_USER` and `DB_PASS` variables. The following command will create a new user *dbuser* with the password *dbpass*.
+[Example redacted]
+
+> **Note**
+>
+> This variable is effective only on the first run of the container as it is used while creating a new PostgreSQL database cluster using [initdb](http://www.postgresql.org/docs/9.4/static/app-initdb.html)
+
+## Trusting local connections
+
+By default connections to the PostgreSQL server need to authenticated using a password. If desired you can trust connections from the local network using the `PG_TRUST_LOCALNET` variable.
 
 ```bash
-docker run --name postgresql -d \
-  -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
+docker run --name postgresql -itd --restart always \
+  --env 'PG_TRUST_LOCALNET=true' \
   sameersbn/postgresql:9.4-8
 ```
 
-**NOTE**
-- If the password is not specified the user will not be created
-- If the user user already exists no changes will be made
+> **Note**
+>
+> The local network here is network to which the container is attached. This has different meanings depending on the `--net` parameter specified while starting the container. In the default configuration, this parameter would trust connections from other containers on the `docker0` bridge.
 
-Similarly, you can also create a new database by specifying the database name in the `DB_NAME` variable.
+## Creating database user
 
-```bash
-docker run --name postgresql -d \
-  -e 'DB_NAME=dbname' sameersbn/postgresql:9.4-8
-```
-
-You may also specify a comma separated list of database names in the `DB_NAME` variable. The following command creates two new databases named *dbname1* and *dbname2* (p.s. this feature is only available in releases greater than 9.1-1).
+A new PostgreSQL database user can be created by specifying the `DB_USER` and `DB_PASS` variables while starting the container.
 
 ```bash
-docker run --name postgresql -d \
-  -e 'DB_NAME=dbname1,dbname2' \
+docker run --name postgresql -itd --restart always \
+  --env 'DB_USER=dbuser' --env 'DB_PASS=dbuserpass' \
   sameersbn/postgresql:9.4-8
 ```
 
-If the `DB_USER` and `DB_PASS` variables are also specified while creating the database, then the user is granted access to the database(s).
+> **Notes**
+>
+> - The created user can login remotely
+> - The container will error out if a password is not specified for the user
+> - No changes will be made if the user already exists
+> - Only a single user can be created at each launch
 
-For example,
+## Creating databases
+
+A new PostgreSQL database can be created by specifying the `DB_NAME` variable while starting the container.
 
 ```bash
-docker run --name postgresql -d \
-  -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' -e 'DB_NAME=dbname' \
+docker run --name postgresql -itd --restart always \
+  --env 'DB_NAME=dbname' \
   sameersbn/postgresql:9.4-8
 ```
 
-will create a user *dbuser* with the password *dbpass*. It will also create a database named *dbname* and the *dbuser* user will have full access to the *dbname* database.
+Additionally, more than one database can be created by specifying a comma separated list of database names in `DB_NAME`. For example, the following command creates two new databases named `dbname1` and `dbname2`.
 
-The `PG_LOCALE` environment variable can be used to configure the locale used for database creation. Its default value is set to C.
-
-The `PG_TRUST_LOCALNET` environment variable can be used to configure postgres to trust connections on the same network.  This is handy for other containers to connect without authentication. To enable this behavior, set `PG_TRUST_LOCALNET` to `true`.
-
-For example,
+*This feature is only available in releases greater than `9.1-1`*
 
 ```bash
-docker run --name postgresql -d \
-  -e 'PG_TRUST_LOCALNET=true' \
+docker run --name postgresql -itd --restart always \
+  --env 'DB_NAME=dbname1,dbname2' \
   sameersbn/postgresql:9.4-8
 ```
 
-This has the effect of adding the following to the `pg_hba.conf` file:
+# Enabling unaccent extension
 
-```
-host    all             all             samenet                 trust
-```
+Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search [[source](http://www.postgresql.org/docs/9.4/static/unaccent.html)].
 
-# Creating a Snapshot or Slave Database
-
-You may use the `REPLICATION_MODE` variable along with `REPLICATION_HOST`, `REPLICATION_PORT`, `REPLICATION_USER` and `REPLICATION_PASS` to create a snapshot of an existing database and enable stream replication.
-
-Your master database must support replication or super-user access for the credentials you specify. The `REPLICATION_MODE` variable should be set to `master`, for replication on your master node and `slave` or `snapshot` respectively for streaming replication or a point-in-time snapshot of a running instance.
-
-Create a master instance
+You can enable the unaccent extension on database(s) by specifying `DB_UNACCENT=true`. For example, the following command enables the unaccent extension for the `dbname` database.
 
 ```bash
-docker run --name='psql-master' -it --rm \
-  -e 'REPLICATION_MODE=master' -e 'PG_TRUST_LOCALNET=true' \
-  -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
-  -e 'DB_NAME=dbname' -e 'DB_USER=dbuser' -e 'DB_PASS=dbpass' \
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_UNACCENT=true' \
   sameersbn/postgresql:9.4-8
 ```
 
-Create a streaming replication instance
+*By default the unaccent extension is disabled*
+
+## Granting user access to a database
+
+If the `DB_USER` and `DB_PASS` variables are specified along with the `DB_NAME` variable, then the user specified in `DB_USER` will be granted access to all the databases listed in `DB_NAME`. Note that if the user and/or databases do not exist, they will be created.
 
 ```bash
-docker run --name='psql-slave' -it --rm  \
-  --link psql-master:psql-master  \
-  -e 'REPLICATION_MODE=slave' -e 'PG_TRUST_LOCALNET=true' \
-  -e 'REPLICATION_HOST=psql-master' -e 'REPLICATION_PORT=5432' \
-  -e 'REPLICATION_USER=replicator' -e 'REPLICATION_PASS=replicatorpass' \
+docker run --name postgresql -itd --restart always \
+  --env 'DB_USER=dbuser' --env 'DB_PASS=dbuserpass' \
+  --env 'DB_NAME=dbname1,dbname2' \
   sameersbn/postgresql:9.4-8
 ```
 
-# Enable Unaccent (Search plain text with accent)
+In the above example `dbuser` with be granted access to both the `dbname1` and `dbname2` databases.
 
-Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search.
+## Creating replication user
 
-By default unaccent is configure to `false`
+Similar to the creation of a database user, a new PostgreSQL replication user can be created by specifying the `REPLICATION_USER` and `REPLICATION_PASS` variables while starting the container.
 
 ```bash
-docker run --name postgresql -d \
-  -e 'DB_UNACCENT=true' \
+docker run --name postgresql -itd --restart always \
+  --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   sameersbn/postgresql:9.4-8
 ```
 
-# Host UID / GID Mapping
+> **Notes**
+>
+> - The created user can login remotely
+> - The container will error out if a password is not specified for the user
+> - No changes will be made if the user already exists
+> - Only a single user can be created at each launch
 
-Per default the container is configured to run postgres as user and group `postgres` with some unknown `uid` and `gid`. The host possibly uses these ids for different purposes leading to unfavorable effects. From the host it appears as if the mounted data volumes are owned by the host's user/group `[whatever id postgres has in the image]`.
+*It is a good idea to create a replication user even if you are not going to use it as it will allow you to setup slave nodes and/or generate snapshots when the need arises.*
 
-Also the container processes seem to be executed as the host's user/group `[whatever id postgres has in the image]`. The container can be configured to map the `uid` and `gid` of `postgres` to different ids on host by passing the environment variables `USERMAP_UID` and `USERMAP_GID`. The following command maps the ids to user and group `postgres` on the host.
+## Setting up a replication cluster
+
+When the container is started, it is by default configured to act as a master node in a replication cluster. This means that you can scale your PostgreSQL database backend when the need arises without incurring any downtime. However do note that a replication user must exist on the master node for this to work.
+
+Begin by creating the master node of our cluster:
 
 ```bash
-docker run --name=postgresql -it --rm [options] \
-  --env="USERMAP_UID=$(id -u postgres)" --env="USERMAP_GID=$(id -g postgres)" \
+docker run --name postgresql-master -itd --restart always \
+  --env 'DB_USER=dbuser' --env 'DB_PASS=dbuserpass' --env 'DB_NAME=dbname' \
+  --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   sameersbn/postgresql:9.4-8
 ```
 
+Notice that no additional arguments are specified while starting the master node of the cluster.
 
-# Upgrading
+To create a replication slave the `REPLICATION_MODE` variable should be set to `slave` and additionally the `REPLICATION_HOST`, `REPLICATION_PORT`, `REPLICATION_SSLMODE`, `REPLICATION_USER` and `REPLICATION_PASS` variables should be specified.
 
-To upgrade to newer releases, simply follow this 3 step upgrade procedure.
-
-- **Step 1**: Stop the currently running image
-
-```bash
-docker stop postgresql
-```
-
-- **Step 2**: Update the docker image.
+Create a slave node:
 
 ```bash
-docker pull sameersbn/postgresql:9.4-8
+docker run --name postgresql-slave01 -itd --restart always \
+  --link postgresql-master:master \
+  --env 'REPLICATION_MODE=slave' -e 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
+  sameersbn/postgresql:9.4-8
 ```
 
-- **Step 3**: Start the image
+*In the above command, we used docker links so that we can address the master node using the `master` alias in `REPLICATION_HOST`.*
+
+> **Note**
+>
+> - The default value of `REPLICATION_PORT` is `5432`
+> - The default value of `REPLICATION_SSLMODE` is `prefer`
+> - The value of `REPLICATION_USER` and `REPLICATION_PASS` should be the same as the ones specified on the master node.
+
+And just like that with minimal effort you have a PostgreSQL replication cluster setup. You can create additional slaves to scale the cluster horizontally.
+
+Here are some important notes about a PostgreSQL replication cluster:
+
+ - Writes can only occur on the master
+ - Slaves are read-only
+ - For best performance, limit the reads to the slave nodes
+
+## Creating a snapshot
+
+Similar to a creating replication slave node, you can create a snapshot of the master by specifying `REPLICATION_MODE=snapshot`.
+
+Once the master node is created as specified in [Setting up a replication cluster](#setting-up-a-replication-cluster), you can create a snapshot using:
 
 ```bash
-docker run --name postgresql -d [OPTIONS] sameersbn/postgresql:9.4-8
+docker run --name postgresql-snapshot -itd --restart always \
+  --link postgresql-master:master \
+  --env 'REPLICATION_MODE=snapshot' -e 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
+  sameersbn/postgresql:9.4-8
 ```
 
-# Shell Access
+The difference between a slave and a snapshot is that a slave is read-only and updated whenever the master data is updated (streaming replication), while a snapshot is read-write and is not updated after the initial snapshot of the data on the master.
 
-For debugging and maintenance purposes you may want access the containers shell. If you are using docker version `1.3.0` or higher you can access a running containers shell using `docker exec` command.
+This is useful for developers to quickly snapshot the current state of a live database and use it for development/debugging purposes without altering the database on the live instance.
+
+## Logs
+
+By default the PostgreSQL server logs are sent to the standard output. Using the [Command-line arguments](#command-line-arguments) feature you can configure the PostgreSQL server to send the log output to a file using the `-c logging_collector=on` argument:
+
+```bash
+docker run --name postgresql -itd --restart always \
+  sameersbn/postgresql:9.4-8 -c logging_collector=on
+```
+
+To access the PostgreSQL logs you can use `docker exec`. For example:
+
+```bash
+docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.4-main.log
+```
+
+# UID/GID mapping
+
+The files and processes created by the container are owned by the `postgres` user that is internal to the container. In the absense of user namespace in docker the UID and GID of the containers `postgres` user may have different meaning on the host.
+
+For example, a user on the host with the same UID and/or GID as the `postgres` user of the container will be able to access the data in the persistent volumes mounted from the host as well as be able to KILL the `postgres` server process started by the container.
+
+To circumvent this issue you can specify the UID and GID for the `postgres` user of the container using the `USERMAP_UID` and `USERMAP_GID` variables respectively.
+
+For example, if you want to assign the `postgres` user of the container the UID and GID `999`:
+
+```bash
+docker run --name postgresql -itd --restart always \
+  --env 'USERMAP_UID=999' --env 'USERMAP_GID=999' \
+  sameersbn/postgresql:9.4-8
+```
+
+# Maintenance
+
+## Upgrading
+
+To upgrade to newer releases:
+
+  1. Download the updated Docker image:
+
+  ```bash
+  docker pull sameersbn/postgresql:9.4-8
+  ```
+
+  2. Stop the currently running image:
+
+  ```bash
+  docker stop postgresql
+  ```
+
+  3. Remove the stopped container
+
+  ```bash
+  docker rm -v postgresql
+  ```
+
+  4. Start the updated image
+
+  ```bash
+  docker run --name postgresql -itd \
+    [OPTIONS] \
+    sameersbn/postgresql:9.4-8
+  ```
+
+## Shell Access
+
+For debugging and maintenance purposes you may want access the containers shell. If you are using Docker version `1.3.0` or higher you can access a running containers shell by starting `bash` using `docker exec`:
 
 ```bash
 docker exec -it postgresql bash
 ```
-
-If you are using an older version of docker, you can use the [nsenter](http://man7.org/linux/man-pages/man1/nsenter.1.html) linux tool (part of the util-linux package) to access the container shell.
-
-Some linux distros (e.g. ubuntu) use older versions of the util-linux which do not include the `nsenter` tool. To get around this @jpetazzo has created a nice docker image that allows you to install the `nsenter` utility and a helper script named `docker-enter` on these distros.
-
-To install `nsenter` execute the following command on your host,
-
-```bash
-docker run --rm -v /usr/local/bin:/target jpetazzo/nsenter
-```
-
-Now you can access the container shell using the command
-
-```bash
-sudo docker-enter postgresql
-```
-
-For more information refer https://github.com/jpetazzo/nsenter
