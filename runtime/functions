@@ -176,6 +176,7 @@ initialize_database() {
             echo "Generating a snapshot data on $REPLICATION_HOST..."
             exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
               -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
+            ;;
         esac
         ;;
       *)
