@@ -1,0 +1,15 @@
+PostgreSQL:
+  restart: always
+  image: sameersbn/postgresql:9.4-8
+  ports:
+    - "5432:5432"
+  environment:
+    - DB_USER=
+    - DB_PASS=
+    - DB_NAME=
+    - REPLICATION_MODE=
+    - REPLICATION_USER=
+    - REPLICATION_PASS=
+    - REPLICATION_SSLMODE=
+  volumes:
+    - /srv/docker/postgresql:/var/lib/postgresql
