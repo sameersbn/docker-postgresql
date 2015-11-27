@@ -287,7 +287,7 @@ This is useful for developers to quickly snapshot the current state of a live da
 
 ## Creating a backup
 
-Just as the case of setting up a slave node or generating a snapshot, you can also create a backup of the data on the master master by specifying `REPLICATION_MODE=backup`.
+Just as the case of setting up a slave node or generating a snapshot, you can also create a backup of the data on the master by specifying `REPLICATION_MODE=backup`.
 
 > The backups are generated using [pg_basebackup](http://www.postgresql.org/docs/9.4/static/app-pgbasebackup.html) using the replication protocol.
 
