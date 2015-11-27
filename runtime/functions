@@ -226,6 +226,10 @@ initialize_database() {
     # configure path to data_directory
     set_postgresql_param "data_directory" "${PG_DATADIR}"
 
+    # configure logging
+    set_postgresql_param "log_directory" "${PG_LOGDIR}"
+    set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
+
     # listen on all interfaces
     set_postgresql_param "listen_addresses" "*"
 
