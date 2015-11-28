@@ -9,7 +9,6 @@
   - [Installation](#installation)
   - [Quickstart](#quickstart)
   - [Persistence](#persistence)
-  - [Setting the default locale](#setting-the-default-locale)
   - [Trusting local connections](#trusting-local-connections)
   - [Creating database user](#creating-database-user)
   - [Creating databases](#creating-databases)
