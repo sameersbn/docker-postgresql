@@ -254,43 +254,57 @@ trust_localnet() {
 
 create_user() {
   if [[ -n ${DB_USER} ]]; then
-    if [[ -z ${DB_PASS} ]]; then
-      echo "ERROR! Please specify a password for DB_USER in DB_PASS. Exiting..."
-      exit 1
-    fi
-    echo "Creating database user: ${DB_USER}"
-    echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" | \
-      exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+    case $REPLICATION_MODE in
+      slave|snapshot|backup)
+        echo "INFO! Database user cannot be created on a $REPLICATION_MODE node. Skipping..."
+        ;;
+      *)
+        if [[ -z ${DB_PASS} ]]; then
+          echo "ERROR! Please specify a password for DB_USER in DB_PASS. Exiting..."
+          exit 1
+        fi
+        echo "Creating database user: ${DB_USER}"
+        echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" | \
+          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+        ;;
+    esac
   fi
 }
 
 create_database() {
   if [[ -n ${DB_NAME} ]]; then
-    echo -n "Creating database(s): "
-    for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
-      echo -n "${database} "
-      echo "CREATE DATABASE \"${database}\";" | \
-        exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+    case $REPLICATION_MODE in
+      slave|snapshot|backup)
+        echo "INFO! Database cannot be created on a $REPLICATION_MODE node. Skipping..."
+        ;;
+      *)
+        echo -n "Creating database(s): "
+        for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
+          echo -n "${database} "
+          echo "CREATE DATABASE \"${database}\";" | \
+            exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
 
-      if [[ ${DB_UNACCENT} == true ]]; then
-        echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
-          exec_as_postgres ${PG_BINDIR}/postgres --single ${database} -D ${PG_DATADIR} >/dev/null 2>&1
-      fi
+          if [[ ${DB_UNACCENT} == true ]]; then
+            echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
+              exec_as_postgres ${PG_BINDIR}/postgres --single ${database} -D ${PG_DATADIR} >/dev/null 2>&1
+          fi
 
-      if [[ -n ${DB_USER} ]]; then
-        echo "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" | \
-          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
-      fi
-    done
-    echo
+          if [[ -n ${DB_USER} ]]; then
+            echo "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" | \
+              exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+          fi
+        done
+        echo
+        ;;
+    esac
   fi
 }
 
 create_replication_user() {
-  case $REPLICATION_MODE in
-    slave|snapshot|backup) ;; # replication user can only be created on the master
-    *)
-      if [[ -n ${REPLICATION_USER} ]]; then
+  if [[ -n ${REPLICATION_USER} ]]; then
+    case $REPLICATION_MODE in
+      slave|snapshot|backup) ;; # replication user can only be created on the master
+      *)
         if [[ -z ${REPLICATION_PASS} ]]; then
           echo "ERROR! Please specify a password for REPLICATION_USER in REPLICATION_PASS. Exiting..."
           exit 1
@@ -301,9 +315,9 @@ create_replication_user() {
           exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
 
         set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
-      fi
-      ;;
-  esac
+        ;;
+    esac
+  fi
 }
 
 configure_recovery() {
