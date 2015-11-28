@@ -233,6 +233,7 @@ docker run --name postgresql-slave01 -itd --restart always \
 > - The default value of `REPLICATION_PORT` is `5432`
 > - The default value of `REPLICATION_SSLMODE` is `prefer`
 > - The value of `REPLICATION_USER` and `REPLICATION_PASS` should be the same as the ones specified on the master node.
+> - With [persistence](#persistence) in use, if the container is stopped and started, for the container continue to function as a slave you need to ensure that `REPLICATION_MODE=slave` defined in the containers environment. In the absense of which the slave configuration will be turned off and the node will allow writing to it while having the last synced data from the master.
 
 And just like that with minimal effort you have a PostgreSQL replication cluster setup. You can create additional slaves to scale the cluster horizontally.
 
