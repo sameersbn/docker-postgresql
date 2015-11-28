@@ -14,7 +14,6 @@ fi
 # default behaviour is to launch postgres
 if [[ -z ${1} ]]; then
   map_uidgid
-  locale_gen
 
   create_datadir
   create_certdir

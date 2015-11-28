@@ -338,38 +338,3 @@ configure_recovery() {
     set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
   fi
 }
-
-# allow arguments to be passed to postgers
-if [[ ${1:0:1} = '-' ]]; then
-  EXTRA_ARGS="$@"
-  set --
-elif [[ ${1} == mongod || ${1} == $(which mongod) ]]; then
-  EXTRA_ARGS="${@:2}"
-  set --
-fi
-
-# default behaviour is to launch postgres
-if [[ -z ${1} ]]; then
-  map_uidgid
-
-  create_datadir
-  create_certdir
-  create_logdir
-  create_rundir
-
-  initialize_database
-  configure_ssl
-  trust_localnet
-
-  create_user
-  create_database
-  create_replication_user
-  configure_recovery
-
-  echo "Starting PostgreSQL ${PG_VERSION}..."
-  exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
-    --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} ${EXTRA_ARGS}
-else
-  exec "$@"
-fi
-
