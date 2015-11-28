@@ -102,18 +102,6 @@ mkdir -p /srv/docker/postgresql
 chcon -Rt svirt_sandbox_file_t /srv/docker/postgresql
 ```
 
-## Setting the default locale
-
-*This is an experimental option. Please share your feedback and/or suggestions*
-
-Using the `PG_LOCALE` variable you can set the default [locale](http://www.postgresql.org/docs/9.4/static/locale.html) for the database cluster. The default value of this variable is `PG_LOCALE=C`.
-
-[Example redacted]
-
-> **Note**
->
-> This variable is effective only on the first run of the container as it is used while creating a new PostgreSQL database cluster using [initdb](http://www.postgresql.org/docs/9.4/static/app-initdb.html)
-
 ## Trusting local connections
 
 By default connections to the PostgreSQL server need to authenticated using a password. If desired you can trust connections from the local network using the `PG_TRUST_LOCALNET` variable.

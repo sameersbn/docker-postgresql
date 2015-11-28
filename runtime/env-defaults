@@ -2,9 +2,6 @@
 
 PG_SSL=${PG_SSL:-}
 
-PG_LOCALE=${PG_LOCALE:-$DB_LOCALE} # backward compatibility
-PG_LOCALE=${PG_LOCALE:-C}
-
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-$PSQL_TRUST_LOCALNET} # backward compatibility
 PG_TRUST_LOCALNET=${PG_TRUST_LOCALNET:-false}
 

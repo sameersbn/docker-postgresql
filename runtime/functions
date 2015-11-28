@@ -24,13 +24,6 @@ map_uidgid() {
   fi
 }
 
-locale_gen() {
-  if [[ $PG_LOCALE != C ]]; then
-    echo "Generating locale \"${PG_LOCALE}\"..."
-    locale-gen ${PG_LOCALE} >/dev/null
-  fi
-}
-
 create_datadir() {
   echo "Initializing datadir..."
   mkdir -p ${PG_HOME}
@@ -210,7 +203,7 @@ initialize_database() {
         fi
 
         exec_as_postgres ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-          --username=${PG_USER} --encoding=unicode --locale=${PG_LOCALE} --auth=trust >/dev/null
+          --username=${PG_USER} --encoding=unicode --auth=trust >/dev/null
 
         if [[ -n ${PG_OLD_VERSION} ]]; then
           PG_OLD_BINDIR=/usr/lib/postgresql/${PG_OLD_VERSION}/bin
@@ -344,7 +337,6 @@ fi
 # default behaviour is to launch postgres
 if [[ -z ${1} ]]; then
   map_uidgid
-  locale_gen
 
   create_datadir
   create_certdir
