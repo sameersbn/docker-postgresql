@@ -252,6 +252,28 @@ trust_localnet() {
   fi
 }
 
+configure_recovery() {
+  if [[ ${REPLICATION_MODE} == slave ]]; then
+    if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
+      # initialize recovery.conf on the firstrun (slave only)
+      echo "Configuring recovery..."
+      exec_as_postgres touch ${PG_RECOVERY_CONF}
+      ( echo "standby_mode = 'on'";
+        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
+        echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_RECOVERY_CONF}
+    else
+      set_recovery_param "host"      "${REPLICATION_HOST}"
+      set_recovery_param "port"      "${REPLICATION_PORT}"
+      set_recovery_param "user"      "${REPLICATION_USER}"
+      set_recovery_param "password"  "${REPLICATION_PASS}"
+      set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
+    fi
+  else
+    # recovery.conf can only exist on a slave node, its existence otherwise causes problems
+    rm -rf ${PG_RECOVERY_CONF}
+  fi
+}
+
 create_user() {
   if [[ -n ${DB_USER} ]]; then
     case $REPLICATION_MODE in
@@ -317,24 +339,5 @@ create_replication_user() {
         set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
         ;;
     esac
-  fi
-}
-
-configure_recovery() {
-  if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
-    if [[ ${REPLICATION_MODE} == slave ]]; then
-      # initialize recovery.conf on the firstrun (slave only)
-      echo "Configuring recovery..."
-      exec_as_postgres touch ${PG_RECOVERY_CONF}
-      ( echo "standby_mode = 'on'";
-        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
-        echo "trigger_file = '/tmp/postgresql.trigger'" ) > ${PG_RECOVERY_CONF}
-    fi
-  else
-    set_recovery_param "host"      "${REPLICATION_HOST}"
-    set_recovery_param "port"      "${REPLICATION_PORT}"
-    set_recovery_param "user"      "${REPLICATION_USER}"
-    set_recovery_param "password"  "${REPLICATION_PASS}"
-    set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
   fi
 }
