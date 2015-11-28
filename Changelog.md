@@ -11,6 +11,7 @@
 - complete rewrite of the README
 - add support for creating backups using `pg_basebackup`
 - removed `PG_LOCALE` option (doesn't work!)
+- added `DEBUG` option to enable bash debugging
 
 **9.4-2**
 - added replication options

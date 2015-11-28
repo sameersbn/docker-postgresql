@@ -2,6 +2,8 @@
 set -e
 source ${PG_APP_HOME}/functions
 
+[[ ${DEBUG} == true ]] && set -x
+
 # allow arguments to be passed to postgres
 if [[ ${1:0:1} = '-' ]]; then
   EXTRA_ARGS="$@"

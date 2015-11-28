@@ -4,6 +4,7 @@ PostgreSQL:
   ports:
     - "5432:5432"
   environment:
+    - DEBUG=false
     - DB_USER=
     - DB_PASS=
     - DB_NAME=
