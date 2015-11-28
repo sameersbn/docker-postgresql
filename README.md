@@ -220,8 +220,8 @@ Create a slave node:
 ```bash
 docker run --name postgresql-slave01 -itd --restart always \
   --link postgresql-master:master \
-  --env 'REPLICATION_MODE=slave' -e 'REPLICATION_SSLMODE=prefer' \
-  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_MODE=slave' --env 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   sameersbn/postgresql:9.4-8
 ```
@@ -251,8 +251,8 @@ Once the master node is created as specified in [Setting up a replication cluste
 ```bash
 docker run --name postgresql-snapshot -itd --restart always \
   --link postgresql-master:master \
-  --env 'REPLICATION_MODE=snapshot' -e 'REPLICATION_SSLMODE=prefer' \
-  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_MODE=snapshot' --env 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   sameersbn/postgresql:9.4-8
 ```
@@ -272,8 +272,8 @@ Once the master node is created as specified in [Setting up a replication cluste
 ```bash
 docker run --name postgresql-backup -it --rm \
   --link postgresql-master:master \
-  --env 'REPLICATION_MODE=backup' -e 'REPLICATION_SSLMODE=prefer' \
-  --env 'REPLICATION_HOST=master' -e 'REPLICATION_PORT=5432'  \
+  --env 'REPLICATION_MODE=backup' --env 'REPLICATION_SSLMODE=prefer' \
+  --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   --volume /srv/docker/backups/postgresql.$(date +%Y%m%d%H$M%S):/var/lib/postgresql \
   sameersbn/postgresql:9.4-8
