@@ -65,6 +65,7 @@ set_postgresql_param() {
     local current=$(exec_as_postgres sed -n -e "s/^\("${key}" = '\)\([^ ']*\)\(.*\)$/\2/p" ${PG_CONF})
     if [[ "${current}" != "${value}" ]]; then
       echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
+      value="$(echo "${value}" | sed 's|[&]|\\&|g')"
       exec_as_postgres sed -i "s|^[#]*[ ]*${key} = .*|${key} = '${value}'|" ${PG_CONF}
     fi
   fi
