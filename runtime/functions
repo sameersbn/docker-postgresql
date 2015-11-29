@@ -126,10 +126,6 @@ initialize_database() {
   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
     case ${REPLICATION_MODE} in
       slave|snapshot|backup)
-        # default params
-        REPLICATION_PORT=${REPLICATION_PORT:-5432}
-        REPLICATION_SSLMODE=${REPLICATION_SSLMODE:-prefer}
-
         if [[ -z $REPLICATION_HOST ]]; then
           echo "ERROR! Cannot continue without the REPLICATION_HOST. Exiting..."
           exit 1
