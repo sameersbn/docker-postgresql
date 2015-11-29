@@ -73,10 +73,14 @@ set_postgresql_param() {
 set_recovery_param() {
   local key=${1}
   local value=${2}
+  local hide=${3}
   if [[ -n ${value} ]]; then
     local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\("${key}"=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
     if [[ "${current}" != "${value}" ]]; then
-      echo "Updating primary_conninfo ${key}..."
+      case ${hide} in
+        true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
+        *) echo "‣ Setting primary_conninfo parameter: ${key} = '${value}'" ;;
+      esac
       exec_as_postgres sed -i "s|"${key}"=[^ ']*|"${key}"="${value}"|" ${PG_RECOVERY_CONF}
     fi
   fi
@@ -250,9 +254,9 @@ trust_localnet() {
 
 configure_recovery() {
   if [[ ${REPLICATION_MODE} == slave ]]; then
+    echo "Configuring recovery..."
     if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
       # initialize recovery.conf on the firstrun (slave only)
-      echo "Configuring recovery..."
       exec_as_postgres touch ${PG_RECOVERY_CONF}
       ( echo "standby_mode = 'on'";
         echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
@@ -261,7 +265,7 @@ configure_recovery() {
       set_recovery_param "host"      "${REPLICATION_HOST}"
       set_recovery_param "port"      "${REPLICATION_PORT}"
       set_recovery_param "user"      "${REPLICATION_USER}"
-      set_recovery_param "password"  "${REPLICATION_PASS}"
+      set_recovery_param "password"  "${REPLICATION_PASS}"    "true"
       set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
     fi
   else
