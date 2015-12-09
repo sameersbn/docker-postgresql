@@ -224,19 +224,6 @@ initialize_database() {
         ;;
     esac
 
-    # configure path to data_directory
-    set_postgresql_param "data_directory" "${PG_DATADIR}"
-
-    # configure logging
-    set_postgresql_param "log_directory" "${PG_LOGDIR}"
-    set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
-
-    # listen on all interfaces
-    set_postgresql_param "listen_addresses" "*"
-
-    # allow remote connections to postgresql database
-    set_hba_param "host all all 0.0.0.0/0 md5"
-
     configure_hot_standby
 
     # Change DSM from `posix' to `sysv' if we are inside an lx-brand container
@@ -244,6 +231,19 @@ initialize_database() {
       set_postgresql_param "dynamic_shared_memory_type" "sysv"
     fi
   fi
+
+  # configure path to data_directory
+  set_postgresql_param "data_directory" "${PG_DATADIR}"
+
+  # configure logging
+  set_postgresql_param "log_directory" "${PG_LOGDIR}"
+  set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
+
+  # listen on all interfaces
+  set_postgresql_param "listen_addresses" "*"
+
+  # allow remote connections to postgresql database
+  set_hba_param "host all all 0.0.0.0/0 md5"
 }
 
 trust_localnet() {
