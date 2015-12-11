@@ -203,8 +203,12 @@ initialize_database() {
           mv ${PG_HOME}/${PG_OLD_VERSION}.migrating ${PG_HOME}/${PG_OLD_VERSION}
         fi
 
+        if [[ -n $PG_PASSWORD ]]; then
+          echo "${PG_PASSWORD}" > /tmp/pwfile
+        fi
+
         exec_as_postgres ${PG_BINDIR}/initdb --pgdata=${PG_DATADIR} \
-          --username=${PG_USER} --encoding=unicode --auth=trust >/dev/null
+          --username=${PG_USER} --encoding=unicode --auth=trust ${PG_PASSWORD:+--pwfile=/tmp/pwfile} >/dev/null
 
         if [[ -n ${PG_OLD_VERSION} ]]; then
           PG_OLD_BINDIR=/usr/lib/postgresql/${PG_OLD_VERSION}/bin

@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- added `PG_PASSWORD` variable to specify password for `postgres` user
+
 **9.4-9**
 - complete rewrite
 - `PSQL_TRUST_LOCALNET` config parameter renamed to `PG_TRUST_LOCALNET`

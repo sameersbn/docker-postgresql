@@ -10,6 +10,7 @@
   - [Quickstart](#quickstart)
   - [Persistence](#persistence)
   - [Trusting local connections](#trusting-local-connections)
+  - [Setting `postgres` user password](#setting-postgres-user-password)
   - [Creating database user](#creating-database-user)
   - [Creating databases](#creating-databases)
   - [Enabling unaccent extension](#enabling-unaccent-extension)
@@ -114,6 +115,22 @@ docker run --name postgresql -itd --restart always \
 > **Note**
 >
 > The local network here is network to which the container is attached. This has different meanings depending on the `--net` parameter specified while starting the container. In the default configuration, this parameter would trust connections from other containers on the `docker0` bridge.
+
+## Setting `postgres` user password
+
+By default the `postgres` user is not assigned a password and as a result you can only login to the PostgreSQL server locally. If you wish to login remotely to the PostgreSQL server as the `postgres` user, you will need to assign a password for the user using the `PG_PASSWORD` variable.
+
+```bash
+docker run --name postgresql -itd --restart always \
+  --env 'PG_PASSWORD=passw0rd' \
+  sameersbn/postgresql:9.4-10
+```
+
+
+> **Note**
+>
+> - When [persistence](#persistence) is in use, `PG_PASSWORD` is effective on the first run.
+> - This feature is only available in the `latest` and versions > `9.4-10`
 
 ## Creating database user
 
