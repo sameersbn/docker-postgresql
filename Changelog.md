@@ -1,6 +1,6 @@
 # Changelog
 
-**latest**
+**9.4-11**
 - added `PG_PASSWORD` variable to specify password for `postgres` user
 
 **9.4-9**
