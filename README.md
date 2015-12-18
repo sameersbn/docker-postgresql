@@ -181,6 +181,18 @@ docker run --name postgresql -itd \
   sameersbn/postgresql:9.4-11
 ```
 
+# Enabling PostGIS extension
+
+PostGIS is spatial extension to PostgreSQL.
+
+You can enable the PostGIS extension on database(s) by specifying `DB_POSTGIS=true`. For example, the following command enables the unaccent extension for the `dbname` database.
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_POSTGIS=true' \
+  sameersbn/postgresql:9.4-11
+```
+
 *By default the unaccent extension is disabled*
 
 ## Granting user access to a database
