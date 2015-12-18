@@ -14,6 +14,7 @@
   - [Creating database user](#creating-database-user)
   - [Creating databases](#creating-databases)
   - [Enabling unaccent extension](#enabling-unaccent-extension)
+  - [Enabling PostGIS extension](#enabling-postgis-extension)
   - [Granting user access to a database](#granting-user-access-to-a-database)
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
@@ -180,6 +181,7 @@ docker run --name postgresql -itd \
   --env 'DB_NAME=dbname' --env 'DB_UNACCENT=true' \
   sameersbn/postgresql:9.4-11
 ```
+*By default the unaccent extension is disabled*
 
 # Enabling PostGIS extension
 
@@ -192,8 +194,7 @@ docker run --name postgresql -itd \
   --env 'DB_NAME=dbname' --env 'DB_POSTGIS=true' \
   sameersbn/postgresql:9.4-11
 ```
-
-*By default the unaccent extension is disabled*
+*By default the PostGIS extension is disabled*
 
 ## Granting user access to a database
 
