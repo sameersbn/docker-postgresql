@@ -308,8 +308,31 @@ create_database() {
         echo -n "Creating database(s): "
         for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
           echo -n "${database} "
-          echo "CREATE DATABASE \"${database}\";" | \
-            exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+
+          if [[ ${DB_POSTGIS} == true ]]; then
+
+              echo "CREATE DATABASE template_postgis WITH ENCODING = 'UTF8' TEMPLATE = template0;" | \
+                  exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+
+              echo "UPDATE pg_database SET datistemplate = TRUE WHERE datname = 'template_postgis';" | \
+                  exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+
+              # because we can't create extensions in single-user mode, we will just read the SQL code for PostGIS
+              PG_POSTGIS_HOME=/usr/share/postgresql/${PG_VERSION}/contrib/postgis-${PG_POSTGIS_VERSION}
+              exec_as_postgres ${PG_BINDIR}/postgres --single template_postgis -D ${PG_DATADIR} -j \
+                               < ${PG_POSTGIS_HOME}/postgis.sql >/dev/null 2>&1
+              exec_as_postgres ${PG_BINDIR}/postgres --single template_postgis -D ${PG_DATADIR} -j \
+                               < ${PG_POSTGIS_HOME}/topology.sql >/dev/null 2>&1
+              exec_as_postgres ${PG_BINDIR}/postgres --single template_postgis -D ${PG_DATADIR} -j \
+                               < ${PG_POSTGIS_HOME}/spatial_ref_sys.sql >/dev/null 2>&1
+
+              # create PostGIS database
+              echo "CREATE DATABASE \"${database}\" WITH TEMPLATE = template_postgis;" | \
+                  exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+          else
+              echo "CREATE DATABASE \"${database}\";" | \
+                  exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+          fi
 
           if [[ ${DB_UNACCENT} == true ]]; then
             echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
