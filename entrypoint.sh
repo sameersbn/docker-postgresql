@@ -22,6 +22,8 @@ if [[ -z ${1} ]]; then
   create_logdir
   create_rundir
 
+  set_resolvconf_perms
+
   initialize_database
   configure_recovery
   configure_ssl
@@ -30,8 +32,6 @@ if [[ -z ${1} ]]; then
   create_user
   create_database
   create_replication_user
-
-  set_resolvconf_perms
 
   echo "Starting PostgreSQL ${PG_VERSION}..."
   exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
