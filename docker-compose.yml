@@ -5,9 +5,13 @@ PostgreSQL:
     - "5432:5432"
   environment:
     - DEBUG=false
+
     - DB_USER=
     - DB_PASS=
     - DB_NAME=
+
+    - DB_UNACCENT=
+
     - REPLICATION_MODE=
     - REPLICATION_USER=
     - REPLICATION_PASS=
