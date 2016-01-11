@@ -323,6 +323,11 @@ create_database() {
             psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
           fi
 
+          if [[ ${DB_POSTGIS} == true ]]; then
+            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis;" >/dev/null 2>&1
+            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" >/dev/null 2>&1
+          fi
+
           if [[ -n ${DB_USER} ]]; then
             psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
           fi
