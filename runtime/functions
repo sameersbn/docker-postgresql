@@ -247,9 +247,6 @@ initialize_database() {
   set_postgresql_param "log_directory" "${PG_LOGDIR}"
   set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
 
-  # listen on all interfaces
-  set_postgresql_param "listen_addresses" "*"
-
   # allow remote connections to postgresql database
   set_hba_param "host all all 0.0.0.0/0 md5"
 }
@@ -259,6 +256,11 @@ trust_localnet() {
     echo "Trusting connections from the local network..."
     set_hba_param "host all all samenet trust"
   fi
+}
+
+set_resolvconf_perms() {
+  echo "Setting resolv ACLs..."
+  setfacl -m user:${PG_USER}:r /etc/resolv.conf
 }
 
 configure_recovery() {
@@ -295,8 +297,9 @@ create_user() {
           exit 1
         fi
         echo "Creating database user: ${DB_USER}"
-        echo "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" | \
-          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+        if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_user WHERE usename = '${DB_USER}'";) ]]; then
+          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" with LOGIN CREATEDB PASSWORD '${DB_PASS}';" >/dev/null
+        fi
         ;;
     esac
   fi
@@ -312,17 +315,16 @@ create_database() {
         echo -n "Creating database(s): "
         for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
           echo -n "${database} "
-          echo "CREATE DATABASE \"${database}\";" | \
-            exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+          if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_database WHERE datname = '${DB_NAME}'";) ]]; then
+            psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\";" >/dev/null
+          fi
 
           if [[ ${DB_UNACCENT} == true ]]; then
-            echo "CREATE EXTENSION IF NOT EXISTS unaccent;" | \
-              exec_as_postgres ${PG_BINDIR}/postgres --single ${database} -D ${PG_DATADIR} >/dev/null 2>&1
+            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
           fi
 
           if [[ -n ${DB_USER} ]]; then
-            echo "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" | \
-              exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+            psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
           fi
         done
         echo
@@ -342,8 +344,7 @@ create_replication_user() {
         fi
 
         echo "Creating replication user: ${REPLICATION_USER}"
-        echo "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" | \
-          exec_as_postgres ${PG_BINDIR}/postgres --single -D ${PG_DATADIR} >/dev/null 2>&1
+        psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" >/dev/null
 
         set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
         ;;
@@ -351,7 +352,23 @@ create_replication_user() {
   fi
 }
 
-set_resolvconf_perms() {
-  echo "Setting resolv ACLs..."
-  setfacl -m user:${PG_USER}:r /etc/resolv.conf
+configure_postgresql() {
+  initialize_database
+  configure_recovery
+  configure_ssl
+  trust_localnet
+
+  # start postgres server internally for the creation of users and databases
+  set_postgresql_param "listen_addresses" "127.0.0.1" quiet
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
+
+  create_user
+  create_database
+  create_replication_user
+
+  # stop the postgres server
+  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
+
+  # listen on all interfaces
+  set_postgresql_param "listen_addresses" "*" quiet
 }

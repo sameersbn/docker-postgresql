@@ -1,5 +1,8 @@
 # Changelog
 
+**latest**
+- removed use of single-user mode
+
 **9.4-11**
 - added `PG_PASSWORD` variable to specify password for `postgres` user
 
