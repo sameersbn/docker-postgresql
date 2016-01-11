@@ -3,12 +3,12 @@ MAINTAINER sameer@damagehead.com
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.4 \
+    PG_POSTGIS_VERSION=2.1 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
     PG_LOGDIR=/var/log/postgresql \
-    PG_CERTDIR=/etc/postgresql/certs \
-    PG_POSTGIS_VERSION=2.1
+    PG_CERTDIR=/etc/postgresql/certs
 
 ENV PG_BINDIR=/usr/lib/postgresql/${PG_VERSION}/bin \
     PG_DATADIR=${PG_HOME}/${PG_VERSION}/main
