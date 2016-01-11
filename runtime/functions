@@ -62,7 +62,7 @@ set_postgresql_param() {
   local key=${1}
   local value=${2}
   if [[ -n ${value} ]]; then
-    local current=$(exec_as_postgres sed -n -e "s/^\("${key}" = '\)\([^ ']*\)\(.*\)$/\2/p" ${PG_CONF})
+    local current=$(exec_as_postgres sed -n -e "s/^\(${key} = '\)\([^ ']*\)\(.*\)$/\2/p" ${PG_CONF})
     if [[ "${current}" != "${value}" ]]; then
       echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
       value="$(echo "${value}" | sed 's|[&]|\\&|g')"
@@ -76,7 +76,7 @@ set_recovery_param() {
   local value=${2}
   local hide=${3}
   if [[ -n ${value} ]]; then
-    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\("${key}"=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
+    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\(${key}=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
     if [[ "${current}" != "${value}" ]]; then
       case ${hide} in
         true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
