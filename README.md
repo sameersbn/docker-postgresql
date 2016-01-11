@@ -200,6 +200,17 @@ docker run --name postgresql -itd \
   sameersbn/postgresql:9.4-11
 ```
 
+Additionally, creation of PostGIS topology extension can be enabled by specifying `DB_POSTGIS_TOPOLOGY=true`:
+
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_POSTGIS=true' --env DB_POSTGIS_TOPOLOGY=true \
+  sameersbn/postgresql:9.4-11
+```
+
+Note that topology extension creation can be enabled only when PostGIS extension is enabled.
+
 *By default the PostGIS extension is disabled*
 
 ## Granting user access to a database

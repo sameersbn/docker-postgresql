@@ -326,7 +326,10 @@ create_database() {
           if [[ ${DB_POSTGIS} == true ]]; then
             echo "‣ Loading PostGIS extension..."
             psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis;" >/dev/null 2>&1
-            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" >/dev/null 2>&1
+            if [[ ${DB_POSTGIS_TOPOLOGY} == true ]]; then
+                echo "‣ Loading PostGIS Topology extension..."
+                psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" >/dev/null 2>&1
+            fi
           fi
 
           if [[ -n ${DB_USER} ]]; then
