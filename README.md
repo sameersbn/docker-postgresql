@@ -159,6 +159,8 @@ docker run --name postgresql -itd --restart always \
   sameersbn/postgresql:9.4-11
 ```
 
+By default databases are created by copying the standard system database named `template1`. You can specify a different template for your database using the `DB_TEMPLATE` parameter. Refer to [Template Databases](http://www.postgresql.org/docs/9.4/static/manage-ag-templatedbs.html) for further information.
+
 Additionally, more than one database can be created by specifying a comma separated list of database names in `DB_NAME`. For example, the following command creates two new databases named `dbname1` and `dbname2`.
 
 *This feature is only available in releases greater than `9.1-1`*

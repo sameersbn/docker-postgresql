@@ -9,6 +9,7 @@ PostgreSQL:
     - DB_USER=
     - DB_PASS=
     - DB_NAME=
+    - DB_TEMPLATE=
 
     - DB_UNACCENT=
 
