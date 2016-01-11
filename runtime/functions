@@ -346,3 +346,8 @@ create_replication_user() {
     esac
   fi
 }
+
+set_resolvconf_perms() {
+  echo "Setting resolv ACLs..."
+  setfacl -m user:${PG_USER}:r /etc/resolv.conf
+}

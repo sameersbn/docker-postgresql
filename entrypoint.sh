@@ -31,6 +31,8 @@ if [[ -z ${1} ]]; then
   create_database
   create_replication_user
 
+  set_resolvconf_perms
+
   echo "Starting PostgreSQL ${PG_VERSION}..."
   exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
     --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} ${EXTRA_ARGS}
