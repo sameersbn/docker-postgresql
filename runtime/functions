@@ -312,22 +312,22 @@ create_database() {
         echo "INFO! Database cannot be created on a $REPLICATION_MODE node. Skipping..."
         ;;
       *)
-        echo -n "Creating database(s): "
         for database in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_NAME}"); do
-          echo -n "${database} "
+          echo "Creating database: ${database}..."
           if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_database WHERE datname = '${DB_NAME}'";) ]]; then
             psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\" WITH TEMPLATE = \"${DB_TEMPLATE}\";" >/dev/null
           fi
 
           if [[ ${DB_UNACCENT} == true ]]; then
+            echo "‣ Loading unaccent extension..."
             psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
           fi
 
           if [[ -n ${DB_USER} ]]; then
+            echo "‣ Granting access to ${DB_USER} user..."
             psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
           fi
         done
-        echo
         ;;
     esac
   fi
