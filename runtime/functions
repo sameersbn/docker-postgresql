@@ -61,10 +61,14 @@ create_rundir() {
 set_postgresql_param() {
   local key=${1}
   local value=${2}
+  local verbosity=${3:-verbose}
+
   if [[ -n ${value} ]]; then
     local current=$(exec_as_postgres sed -n -e "s/^\(${key} = '\)\([^ ']*\)\(.*\)$/\2/p" ${PG_CONF})
     if [[ "${current}" != "${value}" ]]; then
-      echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
+      if [[ ${verbosity} == verbose ]]; then
+        echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
+      fi
       value="$(echo "${value}" | sed 's|[&]|\\&|g')"
       exec_as_postgres sed -i "s|^[#]*[ ]*${key} = .*|${key} = '${value}'|" ${PG_CONF}
     fi
