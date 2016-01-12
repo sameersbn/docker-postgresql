@@ -344,7 +344,9 @@ create_replication_user() {
         fi
 
         echo "Creating replication user: ${REPLICATION_USER}"
-        psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" >/dev/null
+        if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_user WHERE usename = '${REPLICATION_USER}'";) ]]; then
+          psql -U ${PG_USER} -c "CREATE ROLE \"${REPLICATION_USER}\" WITH REPLICATION LOGIN ENCRYPTED PASSWORD '${REPLICATION_PASS}';" >/dev/null
+        fi
 
         set_hba_param "host replication ${REPLICATION_USER} 0.0.0.0/0 md5"
         ;;
