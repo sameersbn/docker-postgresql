@@ -295,7 +295,7 @@ docker run --name postgresql-backup -it --rm \
   --env 'REPLICATION_MODE=backup' --env 'REPLICATION_SSLMODE=prefer' \
   --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
-  --volume /srv/docker/backups/postgresql.$(date +%Y%m%d%H$M%S):/var/lib/postgresql \
+  --volume /srv/docker/backups/postgresql.$(date +%Y%m%d%H%M%S):/var/lib/postgresql \
   sameersbn/postgresql:9.4-12
 ```
 
