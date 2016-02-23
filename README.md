@@ -15,6 +15,7 @@
   - [Creating databases](#creating-databases)
   - [Enabling unaccent extension](#enabling-unaccent-extension)
   - [Granting user access to a database](#granting-user-access-to-a-database)
+  - [Granting additional user privileges](#granting-additional-privileges-to-the-user)
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
   - [Creating a snapshot](#creating-a-snapshot)
@@ -197,6 +198,20 @@ docker run --name postgresql -itd --restart always \
 ```
 
 In the above example `dbuser` with be granted access to both the `dbname1` and `dbname2` databases.
+
+## Granting additional privileges to the user
+
+The `DB_USER` by default is created with `LOGIN CREATEDB` privileges. You may specify your own alternative list with `DB_USER_PRIVS`.
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_USER=dbuser' --env 'DB_PASS=dbuserpass' \
+  --env 'DB_NAME=dbname1,dbname2' \
+  --env 'DB_USER_PRIVS=LOGIN SUPERUSER' \
+  sameersbn/postgresql:9.4-13
+```
+
+*Note that LOGIN is still specified-- no privileges are given by default if `DB_USER_PRIVS` is used.*
 
 ## Creating replication user
 
