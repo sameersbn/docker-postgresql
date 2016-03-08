@@ -170,6 +170,25 @@ docker run --name postgresql -itd --restart always \
   sameersbn/postgresql:9.6-1
 ```
 
+=======
+  sameersbn/postgresql:9.4-14
+```
+
+# Enabling unaccent extension
+
+Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search [[source](http://www.postgresql.org/docs/9.4/static/unaccent.html)].
+
+You can enable the unaccent extension on database(s) by specifying `DB_UNACCENT=true`. For example, the following command enables the unaccent extension for the `dbname` database.
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_UNACCENT=true' \
+  sameersbn/postgresql:9.4-14
+```
+
+*By default the unaccent extension is disabled*
+
+>>>>>>> e08b609 (release 9.4-14)
 ## Granting user access to a database
 
 If the `DB_USER` and `DB_PASS` variables are specified along with the `DB_NAME` variable, then the user specified in `DB_USER` will be granted access to all the databases listed in `DB_NAME`. Note that if the user and/or databases do not exist, they will be created.

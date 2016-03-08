@@ -1,6 +1,6 @@
 PostgreSQL:
   restart: always
-  image: bokysan/postgresql
+  image: sameersbn/postgresql:9.4-14
   ports:
     - "5432:5432"
   environment:
