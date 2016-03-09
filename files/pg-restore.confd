@@ -1,0 +1,16 @@
+
+# Enable this to dump databases on shutdown and restore on boot
+#
+#PGDUMP="/var/lib/postgresql/backup/databases.pgdump"
+
+# The dump file will be deleted once restored unless KEEP_DUMP is set.
+# This is to avoid accidental restoring of running database. If you know what
+# you are doing and want keep the dump, then enable the KEEP_DUMP option
+# below.
+#
+#KEEP_DUMP=yes
+
+# If you enable KEEP_DUMP above you probably also want the --clean option
+# the the pg_dumpall command.
+#PG_DUMPALL_OPTS="--clean"
+

@@ -1,0 +1,36 @@
+#!/sbin/openrc-run
+
+extra_commands="${opts} dump restore purge"
+
+depend() {
+	need postgresql
+}
+
+restore() {
+	yesno "$PGDUMP" && return 0
+	ebegin "Restoring PostgreSQL $PGDUMP"
+	psql -U ${PG_USER:-postgres} ${PSQL_OPTS} -f "$PGDUMP" >/dev/null 2>/dev/null
+	local res=$?
+	yesno "$KEEP_DUMP" || rm -f "$PGDUMP"
+	eend $res
+	/etc/init.d/postgresql reload
+}
+
+dump() {
+	yesno "$PGDUMP" && return 0
+	mkdir -p "$( dirname "$PGDUMP" )"
+	ebegin "Saving PostgreSQL databases to $PGDUMP"
+	pg_dumpall -U ${PG_USER:-postgres} ${PG_DUMPALL_OPTS} -f "$PGDUMP"
+	eend $?
+}
+
+purge() {
+	yesno "$PGDUMP" && return 0
+	ebegin "Removing temporary $PGDUMP PostgreSQL backup"
+	rm -f "$PGDUMP"
+	eend $?
+}
+
+start() {
+	restore	
+}

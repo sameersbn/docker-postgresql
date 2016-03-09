@@ -1,0 +1,152 @@
+#!/sbin/openrc-run
+# Copyright 1999-2008 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: /var/cvsroot/gentoo-x86/dev-db/postgresql-server/files/postgresql.init-8.3,v 1.4 2008/09/28 22:53:02 caleb Exp $
+# Modifications to support Alpine Linux pg-restore
+
+extra_started_commands="reload"
+extra_stopped_commands="setup"
+
+depend() {
+	use net
+	after firewall
+}
+
+get_config() {
+	[ -f ${PGDATA%/}/postgresql.conf ] || return 1
+	eval echo $(sed -e 's:#.*::' ${PGDATA%/}/postgresql.conf | awk '$1 == "'$1'" { print ($2 == "=" ? $3 : $2) }')
+}
+
+
+checkconfig() {
+	configured_port=$(get_config port)
+	: ${configured_port:=${PGPORT:-5432}}
+	socket_path=$(get_config unix_socket_directories)
+	: ${socket_path:=/var/run/postgresql}
+
+	checkpath -d -m 0770 -o postgres:postgres ${socket_path}
+
+	if [ -n "$WAIT_FOR_START" ]; then
+		START_TIMEOUT=$WAIT_FOR_START
+	fi
+
+	[ -d "$PGDATA/base" ] && return 0
+	if [ -z "$AUTO_SETUP" ] ; then
+		eerror "Database not found at: $PGDATA"
+		eerror "Please make sure that PGDATA points to the right path."
+		eerror "You can run '/etc/init.d/postgresql setup' to setup a new database cluster."
+		return 1
+	fi
+	setup
+}
+
+start() {
+	checkconfig || return 1
+
+	ebegin "Starting PostgreSQL"
+
+	if [ -f "$PGDATA/postmaster.pid" ] ; then
+		rm -f "$PGDATA/postmaster.pid"
+	fi
+
+	local retval= x= extraenv=
+	for x in ${PG_EXTRA_ENV} ; do
+		extraenv="${extraenv} --env ${x}"
+	done
+
+	start-stop-daemon --start \
+		--user ${PGUSER:-postgres} \
+		--group ${PGGROUP:-postgres} \
+		--env "PGPORT=${configured_port}" \
+		${extraenv} \
+		--pidfile ${PGDATA}/postmaster.pid \
+		--wait 100 \
+		--exec /usr/bin/pg_ctl \
+		-- \
+		start -s -w -t ${START_TIMEOUT:-10} \
+		-l ${PGDATA}/postmaster.log \
+		-D ${PGDATA} -o "$PGOPTS"
+	retval=$?
+
+	if [ $retval -ne 0 ] ; then
+		eerror "Check the log for a possible explanation of the above error."
+		eerror "    ${PGDATA}/postmaster.log"
+	fi
+	eend $retval
+}
+
+stop() {
+	if [ -n "$WAIT_FOR_DISCONNECT" ]; then
+		NICE_TIMEOUT=$WAIT_FOR_DISCONNECT
+	fi
+	if [ -n "$WAIT_FOR_CLEANUP" ]; then
+		RUDE_QUIT=YES
+		RUDE_TIMEOUT=$WAIT_FOR_CLEANUP
+	fi
+	if [ -n "$WAIT_FOR_QUIT" ] && [ $WAIT_FOR_QUIT -ne 0 ]; then
+		FORCE_QUIT=YES
+		FORCE_TIMEOUT=$WAIT_FOR_QUIT
+	fi
+
+	local seconds=${NICE_TIMEOUT}
+	local retval
+	local retries=SIGTERM/${NICE_TIMEOUT}
+	if [ "${RUDE_QUIT}" != "NO" ] ; then
+		retries="${retries}/SIGINT/${RUDE_TIMEOUT}"
+		seconds=$(( $seconds + ${NICE_TIMEOUT} ))
+	fi
+	if [ "${FORCE_QUIT}" = "YES" ] ; then
+		retries="${retries}/SIGQUIT/${FORCE_TIMEOUT}"
+		seconds=$(( $seconds + ${FORCE_TIMEOUT} ))
+	fi
+
+	ebegin "Stopping PostgreSQL (this can take up to ${seconds} seconds)"
+
+	# Loops through nice, rude, and force quit in one go.
+	start-stop-daemon --stop \
+		--exec /usr/bin/postgres \
+		--retry ${retries} \
+		--progress \
+		--pidfile ${PGDATA}/postmaster.pid
+	eend
+}
+
+reload() {
+	ebegin "Reloading PostgreSQL configuration"
+	kill -HUP $(head -n1 ${PGDATA}/postmaster.pid)
+	eend $?
+}
+
+setup() { 
+	ebegin "Creating a new PostgreSQL database cluster" 
+	
+	if [ -d "${PGDATA}/base" ] ; then 
+		eend 1 "${PGDATA}/base already exists" 
+		return 
+	fi 
+
+	mkdir -p "${PGDATA}"  2>/dev/null
+
+	# If the pg_hba.conf and friends exist, move them
+	local tmpdir="$( dirname "$PGDATA" )/tmp"
+	mkdir -p "${tmpdir}" >/dev/null
+	echo mv "${PGDATA}"/* "${tmpdir}" 
+	mv "${PGDATA}"/* "${tmpdir}"  2>/dev/null
+
+	rm -rf "${PGDATA}"/* 2>/dev/null
+	chown -Rf postgres:postgres "${PGDATA}" 
+	chmod 0700 "${PGDATA}" 
+	cd "${PGDATA}" # to avoid the: could not change directory to "/root" 
+	su -c "/usr/bin/initdb --pgdata ${PGDATA}" postgres
+	local res=$?
+
+	# move the pg_hba.conf and friends
+	mv $tmpdir/* "$PGDATA" 2>/dev/null 
+	rm -rf $tmpdir 2>/dev/null
+
+	# Do not send a SIGHUP to postmaster;  its not necessary for a new database
+	# and allows pg-restore to do a blind restore of an old database
+
+	eend $res
+} 
+

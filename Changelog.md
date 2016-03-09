@@ -1,8 +1,40 @@
 # Changelog
 
-**9.6**
-- postgresql: upgrade to 9.6
-- upgrade baseimage to sameersbn/ubuntu:14.04.20170110
+11.2-02
+- make sure that extension names are quoted to make it possible to work with extensions with a dash in the name
+
+11.2-01
+- switch to Postgres 11.2
+- switched from gosu to su-exec as it's even smaller and available in alpine repository
+- optimized package management by using `apk --virtual` keyword
+
+**10.5-02**
+- added an option to create multiple usernames at the time of initialization
+- switched to multistage build which should help building things a bit faster
+
+**10.5-01**
+- upgraded ot Postgres 10.5
+- added compatibility layer to be able to create database with the same variables as with the original image
+
+**10.4-01**
+- upgraded Postgres to 10.4
+- upgraded GOSU to 1.10
+- removed depricated MAINTAINER tag and replaced it with LABEL
+
+**9.6.2-02**
+- forced listening on all interfaces on startup
+- added a docker HEALTCHECK command to the container
+
+**9.6.2-01**
+- upgraded to 9.6.2
+- fix for misbehaved PG_LOG_ARCHIVING variable
+
+**9.6.1-01**
+- postgresql: upgraded to 9.6.1
+- fix for `wal-backup.sh` script which misbehaved
+
+**9.6.0-01**
+- postgresql: upgraded to 9.6.0
 
 **9.5**
 - postgresql: upgrade to 9.5
