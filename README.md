@@ -15,6 +15,7 @@
   - [Creating databases](#creating-databases)
   - [Enabling unaccent extension](#enabling-unaccent-extension)
   - [Granting user access to a database](#granting-user-access-to-a-database)
+  - [Enabling extensions](#enabling-extensions)
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
   - [Creating a snapshot](#creating-a-snapshot)
@@ -197,6 +198,18 @@ docker run --name postgresql -itd --restart always \
 ```
 
 In the above example `dbuser` with be granted access to both the `dbname1` and `dbname2` databases.
+
+# Enabling extensions
+
+The image also packages the [postgres contrib module](http://www.postgresql.org/docs/9.4/static/contrib.html). A comma separated list of modules can be specified using the `DB_EXTENSION` parameter.
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=db1,db2' --env 'DB_EXTENSION=unaccent,pg_trgm' \
+  sameersbn/postgresql:9.4-16
+```
+
+The above command enables the `unaccent` and `pg_trgm` modules on the databases listed in `DB_NAME`, namely `db1` and `db2`.
 
 ## Creating replication user
 

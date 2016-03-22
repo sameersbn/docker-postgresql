@@ -305,6 +305,20 @@ create_user() {
   fi
 }
 
+load_extensions() {
+  local database=${1?missing argument}
+
+  if [[ ${DB_UNACCENT} == true ]]; then
+    echo "‣ Loading unaccent extension..."
+    psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
+  fi
+
+  for extension in $(awk -F',' '{for (i = 1 ; i <= NF ; i++) print $i}' <<< "${DB_EXTENSION}"); do
+    echo "‣ Loading ${extension} extension..."
+    psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS ${extension};" >/dev/null 2>&1
+  done
+}
+
 create_database() {
   if [[ -n ${DB_NAME} ]]; then
     case $REPLICATION_MODE in
@@ -318,10 +332,7 @@ create_database() {
             psql -U ${PG_USER} -c "CREATE DATABASE \"${database}\" WITH TEMPLATE = \"${DB_TEMPLATE}\";" >/dev/null
           fi
 
-          if [[ ${DB_UNACCENT} == true ]]; then
-            echo "‣ Loading unaccent extension..."
-            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
-          fi
+          load_extensions ${database}
 
           if [[ -n ${DB_USER} ]]; then
             echo "‣ Granting access to ${DB_USER} user..."

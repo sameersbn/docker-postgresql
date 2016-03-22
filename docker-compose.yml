@@ -12,6 +12,7 @@ PostgreSQL:
     - DB_TEMPLATE=
 
     - DB_UNACCENT=
+    - DB_EXTENSION=
 
     - REPLICATION_MODE=
     - REPLICATION_USER=
