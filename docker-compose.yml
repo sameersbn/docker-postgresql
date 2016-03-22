@@ -11,7 +11,6 @@ PostgreSQL:
     - DB_NAME=
     - DB_TEMPLATE=
 
-    - DB_UNACCENT=
     - DB_EXTENSION=
 
     - REPLICATION_MODE=

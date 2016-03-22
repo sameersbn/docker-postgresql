@@ -13,7 +13,6 @@
   - [Setting `postgres` user password](#setting-postgres-user-password)
   - [Creating database user](#creating-database-user)
   - [Creating databases](#creating-databases)
-  - [Enabling unaccent extension](#enabling-unaccent-extension)
   - [Granting user access to a database](#granting-user-access-to-a-database)
   - [Enabling extensions](#enabling-extensions)
   - [Creating replication user](#creating-replication-user)
@@ -172,20 +171,6 @@ docker run --name postgresql -itd --restart always \
   sameersbn/postgresql:9.4-16
 ```
 
-# Enabling unaccent extension
-
-Unaccent is a text search dictionary that removes accents (diacritic signs) from lexemes. It's a filtering dictionary, which means its output is always passed to the next dictionary (if any), unlike the normal behavior of dictionaries. This allows accent-insensitive processing for full text search [[source](http://www.postgresql.org/docs/9.4/static/unaccent.html)].
-
-You can enable the unaccent extension on database(s) by specifying `DB_UNACCENT=true`. For example, the following command enables the unaccent extension for the `dbname` database.
-
-```bash
-docker run --name postgresql -itd \
-  --env 'DB_NAME=dbname' --env 'DB_UNACCENT=true' \
-  sameersbn/postgresql:9.4-16
-```
-
-*By default the unaccent extension is disabled*
-
 ## Granting user access to a database
 
 If the `DB_USER` and `DB_PASS` variables are specified along with the `DB_NAME` variable, then the user specified in `DB_USER` will be granted access to all the databases listed in `DB_NAME`. Note that if the user and/or databases do not exist, they will be created.
@@ -210,6 +195,10 @@ docker run --name postgresql -itd \
 ```
 
 The above command enables the `unaccent` and `pg_trgm` modules on the databases listed in `DB_NAME`, namely `db1` and `db2`.
+
+> **NOTE**:
+>
+> This option deprecates the `DB_UNACCENT` parameter.
 
 ## Creating replication user
 

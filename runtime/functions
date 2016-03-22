@@ -309,6 +309,11 @@ load_extensions() {
   local database=${1?missing argument}
 
   if [[ ${DB_UNACCENT} == true ]]; then
+    echo
+    echo "WARNING: "
+    echo "  The DB_UNACCENT option will be deprecated in favour of DB_EXTENSION soon."
+    echo "  Please migrate to using DB_EXTENSION"
+    echo
     echo "‣ Loading unaccent extension..."
     psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS unaccent;" >/dev/null 2>&1
   fi
