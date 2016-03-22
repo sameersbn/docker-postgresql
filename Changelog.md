@@ -1,6 +1,6 @@
 # Changelog
 
-**latest**
+**9.4-17**
 - added `DB_EXTENSION` configuration parameter
 
 **9.4-12**
