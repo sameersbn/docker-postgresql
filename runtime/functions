@@ -9,7 +9,7 @@ PG_RECOVERY_CONF=${PG_DATADIR}/recovery.conf
 
 ## Execute command as PG_USER
 exec_as_postgres() {
-  sudo -HEu ${PG_USER} "$@"
+  gosu postgres "$@"
 }
 
 map_uidgid() {
@@ -25,8 +25,8 @@ map_uidgid() {
 }
 
 create_datadir() {
-  echo "Initializing datadir..."
   mkdir -p ${PG_HOME}
+  echo "Initializing data: ${PG_DATADIR}"
   if [[ -d ${PG_DATADIR} ]]; then
     find ${PG_DATADIR} -type f -exec chmod 0600 {} \;
     find ${PG_DATADIR} -type d -exec chmod 0700 {} \;
@@ -35,7 +35,7 @@ create_datadir() {
 }
 
 create_certdir() {
-  echo "Initializing certdir..."
+  echo "Initializing certs: ${PG_CERTDIR}"
   mkdir -p ${PG_CERTDIR}
   [[ -f ${PG_CERTDIR}/server.crt ]] && chmod 0644 ${PG_CERTDIR}/server.crt
   [[ -f ${PG_CERTDIR}/server.key ]] && chmod 0640 ${PG_CERTDIR}/server.key
@@ -44,14 +44,14 @@ create_certdir() {
 }
 
 create_logdir() {
-  echo "Initializing logdir..."
+  echo "Initializing logs: ${PG_LOGDIR}"
   mkdir -p ${PG_LOGDIR}
   chmod -R 1775 ${PG_LOGDIR}
   chown -R root:${PG_USER} ${PG_LOGDIR}
 }
 
 create_rundir() {
-  echo "Initializing rundir..."
+  echo "Initializing run: ${PG_RUNDIR}"
   mkdir -p ${PG_RUNDIR} ${PG_RUNDIR}/${PG_VERSION}-main.pg_stat_tmp
   chmod -R 0755 ${PG_RUNDIR}
   chmod g+s ${PG_RUNDIR}
@@ -69,8 +69,8 @@ set_postgresql_param() {
       if [[ ${verbosity} == verbose ]]; then
         echo "‣ Setting postgresql.conf parameter: ${key} = '${value}'"
       fi
-      value="$(echo "${value}" | sed 's|[&]|\\&|g')"
-      exec_as_postgres sed -i "s|^[#]*[ ]*${key} = .*|${key} = '${value}'|" ${PG_CONF}
+      value="$(echo "${value}" | sed 's|[@]|\\@|g')"
+      exec_as_postgres sed -r -i "s@^[#]*[ ]*${key} = .*@${key} = '${value}'@" ${PG_CONF}
     fi
   fi
 }
@@ -131,6 +131,22 @@ configure_hot_standby() {
   esac
 }
 
+configure_log_archiving() {
+  if [[ ${PG_LOG_ARCHIVING} == true ]] || [[ ! -z ${PG_LOG_ARCHIVING_COMMAND} ]]; then
+    log_archive="${PG_HOME}/${PG_VERSION}/log-archive/"
+    mkdir -p ${log_archive}
+    set_postgresql_param "archive_mode" "on"
+
+    if [[ -z ${PG_LOG_ARCHIVING_COMMAND} ]]; then
+      backup_in_progress="test \! -f ${log_archive}/backup_in_progress"
+      file_exists="test -f ${log_archive}/%f"
+      copy_file="cp %p ${log_archive}/%f"
+      execute_shell="[[ \! -x ${log_archive}/archive.sh ]] || ([[ -x ${log_archive}/archive.sh ]] && ${log_archive}/archive.sh %f %p)"
+      set_postgresql_param "archive_command" "(${backup_in_progress} || (${file_exists} || (${copy_file} && (${execute_shell}))))"
+    fi
+  fi
+}
+
 initialize_database() {
   if [[ ! -f ${PG_DATADIR}/PG_VERSION ]]; then
     case ${REPLICATION_MODE} in
@@ -167,17 +183,20 @@ initialize_database() {
         case ${REPLICATION_MODE} in
           slave)
             echo "Replicating initial data from $REPLICATION_HOST..."
-            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+            export PGPASSWORD=$REPLICATION_PASS
+            exec_as_postgres ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
               -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X stream -w >/dev/null
             ;;
           snapshot)
             echo "Generating a snapshot data on $REPLICATION_HOST..."
-            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+            export PGPASSWORD=$REPLICATION_PASS
+            exec_as_postgres ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
               -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
             ;;
           backup)
             echo "Backing up data on $REPLICATION_HOST..."
-            exec_as_postgres PGPASSWORD=$REPLICATION_PASS ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
+            export PGPASSWORD=$REPLICATION_PASS
+            exec_as_postgres ${PG_BINDIR}/pg_basebackup -D ${PG_DATADIR} \
               -h ${REPLICATION_HOST} -p ${REPLICATION_PORT} -U ${REPLICATION_USER} -X fetch -w >/dev/null
             exit 0
             ;;
@@ -233,6 +252,7 @@ initialize_database() {
     esac
 
     configure_hot_standby
+    configure_log_archiving
 
     # Change DSM from `posix' to `sysv' if we are inside an lx-brand container
     if [[ $(uname -v) == "BrandZ virtual linux" ]]; then
@@ -370,6 +390,50 @@ create_replication_user() {
   fi
 }
 
+
+start_postgres_daemon() {
+  # internal start of server in order to allow set-up using psql-client   
+  # does not listen on TCP/IP and waits until start finishes
+  echo "Starting PostgreSQL ${PG_VERSION}: pg_ctl -D $PG_DATADIR -o ${EXTRA_ARGS} -c listen_addresses='' -w start"
+  gosu postgres pg_ctl -D "$PG_DATADIR" -o "${EXTRA_ARGS} -c listen_addresses=''" -w start
+}
+
+stop_postgres_daemon() {
+  # Stop the daemon
+  echo "Stoppping PostgreSQL..."
+  gosu postgres pg_ctl -D "$PG_DATADIR" -s -m fast -w stop
+}
+
+
+run_startup_scripts() {
+  # Run scripts in much the same manner that the official image does
+  if [ -f /docker-entrypoint-initdb.d/* ]; then
+
+    : ${PG_USER:=postgres}
+    : ${PG_DATABASE:=$PG_USER}
+    export PG_USER PG_DATABASE
+
+    for f in /docker-entrypoint-initdb.d/*; do
+      case "$f" in
+        *.sh)
+          echo "$0: running $f"
+          . "$f" 
+          ;;
+        *.sql) 
+          echo "$0: running $f"
+          psql -v ON_ERROR_STOP=1 --username "$PG_USER" --dbname "$PG_DATABASE" < "$f"
+          echo 
+          ;;
+        *)
+          echo "$0: ignoring $f" 
+          ;;
+        esac
+    echo
+    done
+
+  fi
+}
+
 configure_postgresql() {
   initialize_database
   configure_recovery
@@ -378,16 +442,15 @@ configure_postgresql() {
 
   # start postgres server internally for the creation of users and databases
   rm -rf ${PG_DATADIR}/postmaster.pid
-  set_postgresql_param "listen_addresses" "127.0.0.1" quiet
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w start >/dev/null
+  start_postgres_daemon
 
   create_user
   create_database
   create_replication_user
 
-  # stop the postgres server
-  exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
+  run_startup_scripts
 
-  # listen on all interfaces
-  set_postgresql_param "listen_addresses" "*" quiet
+  # stop the postgres server
+  stop_postgres_daemon
+
 }

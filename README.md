@@ -1,6 +1,6 @@
 [![Circle CI](https://circleci.com/gh/sameersbn/docker-postgresql.svg?style=shield)](https://circleci.com/gh/sameersbn/docker-postgresql) [![Docker Repository on Quay.io](https://quay.io/repository/sameersbn/postgresql/status "Docker Repository on Quay.io")](https://quay.io/repository/sameersbn/postgresql) [![](https://badge.imagelayers.io/sameersbn/postgresql.svg)](https://imagelayers.io/?images=sameersbn/postgresql:latest 'Get your own badge on imagelayers.io')
 
-# sameersbn/postgresql:9.4-17
+# sameersbn/postgresql:9.5.1-01
 
 - [Introduction](#introduction)
   - [Contributing](#contributing)
@@ -17,6 +17,7 @@
   - [Enabling extensions](#enabling-extensions)
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
+  - [Enabling log archiving](#enabling-log-archiving)
   - [Creating a snapshot](#creating-a-snapshot)
   - [Creating a backup](#creating-a-backup)
   - [Command-line arguments](#command-line-arguments)
@@ -29,6 +30,7 @@
 # Introduction
 
 `Dockerfile` to create a [Docker](https://www.docker.com/) container image for [PostgreSQL](http://postgresql.org/).
+It's based on [Alpine linux](http://www.alpinelinux.org/) so the target image is really small (around 25Mb).
 
 PostgreSQL is an object-relational database management system (ORDBMS) with an emphasis on extensibility and standards-compliance [[source](https://en.wikipedia.org/wiki/PostgreSQL)].
 
@@ -159,7 +161,7 @@ docker run --name postgresql -itd --restart always \
   sameersbn/postgresql:9.4-17
 ```
 
-By default databases are created by copying the standard system database named `template1`. You can specify a different template for your database using the `DB_TEMPLATE` parameter. Refer to [Template Databases](http://www.postgresql.org/docs/9.4/static/manage-ag-templatedbs.html) for further information.
+By default databases are created by copying the standard system database named `template1`. You can specify a different template for your database using the `DB_TEMPLATE` parameter. Refer to [Template Databases](http://www.postgresql.org/docs/9.5/static/manage-ag-templatedbs.html) for further information.
 
 Additionally, more than one database can be created by specifying a comma separated list of database names in `DB_NAME`. For example, the following command creates two new databases named `dbname1` and `dbname2`.
 
@@ -186,12 +188,12 @@ In the above example `dbuser` with be granted access to both the `dbname1` and `
 
 # Enabling extensions
 
-The image also packages the [postgres contrib module](http://www.postgresql.org/docs/9.4/static/contrib.html). A comma separated list of modules can be specified using the `DB_EXTENSION` parameter.
+The image also packages the [postgres contrib module](http://www.postgresql.org/docs/9.5/static/contrib.html). A comma separated list of modules can be specified using the `DB_EXTENSION` parameter.
 
 ```bash
 docker run --name postgresql -itd \
   --env 'DB_NAME=db1,db2' --env 'DB_EXTENSION=unaccent,pg_trgm' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 The above command enables the `unaccent` and `pg_trgm` modules on the databases listed in `DB_NAME`, namely `db1` and `db2`.
@@ -207,7 +209,7 @@ Similar to the creation of a database user, a new PostgreSQL replication user ca
 ```bash
 docker run --name postgresql -itd --restart always \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 > **Notes**
@@ -229,7 +231,7 @@ Begin by creating the master node of our cluster:
 docker run --name postgresql-master -itd --restart always \
   --env 'DB_USER=dbuser' --env 'DB_PASS=dbuserpass' --env 'DB_NAME=dbname' \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 Notice that no additional arguments are specified while starting the master node of the cluster.
@@ -244,7 +246,7 @@ docker run --name postgresql-slave01 -itd --restart always \
   --env 'REPLICATION_MODE=slave' --env 'REPLICATION_SSLMODE=prefer' \
   --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 *In the above command, we used docker links so that we can address the master node using the `master` alias in `REPLICATION_HOST`.*
@@ -264,6 +266,13 @@ Here are some important notes about a PostgreSQL replication cluster:
  - Slaves are read-only
  - For best performance, limit the reads to the slave nodes
 
+## Enabling log archiving
+
+If you want to enable log archiving (for [point-in-time recovery]()), set `PG_LOG_ARCHIVING=true`. Logs will be copied over to to
+`/var/lib/postgresql/{version}/log-archive/`. If there's a file `archive.sh` in this folder, it will be executed after a successful
+copy. You can override the copy command by setting the `PG_LOG_ARCHIVING_COMMAND` variable.
+
+
 ## Creating a snapshot
 
 Similar to a creating replication slave node, you can create a snapshot of the master by specifying `REPLICATION_MODE=snapshot`.
@@ -276,7 +285,7 @@ docker run --name postgresql-snapshot -itd --restart always \
   --env 'REPLICATION_MODE=snapshot' --env 'REPLICATION_SSLMODE=prefer' \
   --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 The difference between a slave and a snapshot is that a slave is read-only and updated whenever the master data is updated (streaming replication), while a snapshot is read-write and is not updated after the initial snapshot of the data from the master.
@@ -287,7 +296,7 @@ This is useful for developers to quickly snapshot the current state of a live da
 
 Just as the case of setting up a slave node or generating a snapshot, you can also create a backup of the data on the master by specifying `REPLICATION_MODE=backup`.
 
-> The backups are generated with [pg_basebackup](http://www.postgresql.org/docs/9.4/static/app-pgbasebackup.html) using the replication protocol.
+> The backups are generated with [pg_basebackup](http://www.postgresql.org/docs/9.5/static/app-pgbasebackup.html) using the replication protocol.
 
 Once the master node is created as specified in [Setting up a replication cluster](#setting-up-a-replication-cluster), you can create a point-in-time backup using:
 
@@ -298,7 +307,7 @@ docker run --name postgresql-backup -it --rm \
   --env 'REPLICATION_HOST=master' --env 'REPLICATION_PORT=5432'  \
   --env 'REPLICATION_USER=repluser' --env 'REPLICATION_PASS=repluserpass' \
   --volume /srv/docker/backups/postgresql.$(date +%Y%m%d%H%M%S):/var/lib/postgresql \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 Once the backup is generated, the container will exit and the backup of the master data will be available at `/srv/docker/backups/postgresql.XXXXXXXXXXXX/`. Restoring the backup involves starting a container with the data in `/srv/docker/backups/postgresql.XXXXXXXXXXXX`.
@@ -309,10 +318,10 @@ You can customize the launch command of PostgreSQL server by specifying argument
 
 ```bash
 docker run --name postgresql -itd --restart always \
-  sameersbn/postgresql:9.4-17 -c log_connections=on
+  sameersbn/postgresql:9.5.1-01 -c log_connections=on
 ```
 
-Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
+Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.5/static/app-postgres.html) for the complete list of available options.
 
 ## Logs
 
@@ -320,13 +329,13 @@ By default the PostgreSQL server logs are sent to the standard output. Using the
 
 ```bash
 docker run --name postgresql -itd --restart always \
-  sameersbn/postgresql:9.4-17 -c logging_collector=on
+  sameersbn/postgresql:9.5.1-01 -c logging_collector=on
 ```
 
 To access the PostgreSQL logs you can use `docker exec`. For example:
 
 ```bash
-docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.4-main.log
+docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.5.1-main.log
 ```
 
 # UID/GID mapping
@@ -342,7 +351,7 @@ For example, if you want to assign the `postgres` user of the container the UID 
 ```bash
 docker run --name postgresql -itd --restart always \
   --env 'USERMAP_UID=999' --env 'USERMAP_GID=999' \
-  sameersbn/postgresql:9.4-17
+  sameersbn/postgresql:9.5.1-01
 ```
 
 # Maintenance
@@ -354,7 +363,7 @@ To upgrade to newer releases:
   1. Download the updated Docker image:
 
   ```bash
-  docker pull sameersbn/postgresql:9.4-17
+  docker pull sameersbn/postgresql:9.5.1-01
   ```
 
   2. Stop the currently running image:
@@ -374,8 +383,21 @@ To upgrade to newer releases:
   ```bash
   docker run --name postgresql -itd \
     [OPTIONS] \
-    sameersbn/postgresql:9.4-17
+    sameersbn/postgresql:9.5.1-01
   ```
+
+## Creating databases, access the psql console
+
+You can run all normal psql commands with `docker exec` (requires Docker version `1.3.0` or higher), for example
+```bash
+docker exec -it postgresql psql -l -U postgres
+```
+
+or
+```bash
+docker exec -it postgresql createdb -U postgres
+```
+
 
 ## Shell Access
 
