@@ -259,11 +259,8 @@ trust_localnet() {
 }
 
 set_resolvconf_perms() {
-  if setfacl -m user:${PG_USER}:r /etc/resolv.conf; then
-    echo "Setting resolv.conf ACLs..."  
-  else
-    echo "resolv.conf ACLs couldn't be set: `setfacl` not supported"
-  fi
+  echo "Setting resolv.conf ACLs..."
+  setfacl -m user:${PG_USER}:r /etc/resolv.conf || true
 }
 
 configure_recovery() {
