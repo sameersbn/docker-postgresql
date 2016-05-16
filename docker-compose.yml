@@ -13,6 +13,7 @@ PostgreSQL:
 
     - DB_UNACCENT=
     - DB_HSTORE=
+    - DB_POSTGIS=
 
     - REPLICATION_MODE=
     - REPLICATION_USER=

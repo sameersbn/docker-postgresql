@@ -14,6 +14,7 @@
   - [Creating database user](#creating-database-user)
   - [Creating databases](#creating-databases)
   - [Enabling unaccent extension](#enabling-unaccent-extension)
+  - [Enabling PostGIS extension](#enabling-postgis-extension)
   - [Granting user access to a database](#granting-user-access-to-a-database)
   - [Creating replication user](#creating-replication-user)
   - [Setting up a replication cluster](#setting-up-a-replication-cluster)
@@ -184,6 +185,33 @@ docker run --name postgresql -itd \
 ```
 
 *By default the unaccent extension is disabled*
+
+# Enabling PostGIS extension
+
+**Available in versions > `9.4-11`**
+
+PostGIS is a spatial database extender for PostgreSQL object-relational database. It adds support for geographic objects allowing location queries to be run in SQL.
+
+You can enable the PostGIS extension on database(s) by specifying `DB_POSTGIS=true`. For example, the following command enables the PostGIS extension for the `dbname` database.
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_POSTGIS=true' \
+  sameersbn/postgresql:9.4-11
+```
+
+Additionally, creation of PostGIS topology extension can be enabled by specifying `DB_POSTGIS_TOPOLOGY=true`:
+
+
+```bash
+docker run --name postgresql -itd \
+  --env 'DB_NAME=dbname' --env 'DB_POSTGIS=true' --env DB_POSTGIS_TOPOLOGY=true \
+  sameersbn/postgresql:9.4-11
+```
+
+Note that topology extension creation can be enabled only when PostGIS extension is enabled.
+
+*By default the PostGIS extension is disabled*
 
 ## Granting user access to a database
 

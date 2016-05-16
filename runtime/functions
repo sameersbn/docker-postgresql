@@ -328,6 +328,15 @@ create_database() {
             psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS hstore;" >/dev/null 2>&1
           fi
 
+          if [[ ${DB_POSTGIS} == true ]]; then
+            echo "‣ Loading PostGIS extension..."
+            psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis;" >/dev/null 2>&1
+            if [[ ${DB_POSTGIS_TOPOLOGY} == true ]]; then
+                echo "‣ Loading PostGIS Topology extension..."
+                psql -U ${PG_USER} -d ${database} -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;" >/dev/null 2>&1
+            fi
+          fi
+
           if [[ -n ${DB_USER} ]]; then
             echo "‣ Granting access to ${DB_USER} user..."
             psql -U ${PG_USER} -c "GRANT ALL PRIVILEGES ON DATABASE \"${database}\" to \"${DB_USER}\";" >/dev/null
