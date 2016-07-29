@@ -1,4 +1,4 @@
-FROM sameersbn/ubuntu:14.04.20160710
+FROM sameersbn/ubuntu:14.04.20160727
 MAINTAINER sameer@damagehead.com
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
