@@ -247,15 +247,14 @@ initialize_database() {
   set_postgresql_param "log_directory" "${PG_LOGDIR}"
   set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
 
-  # allow remote connections to postgresql database
-  set_hba_param "host all all 0.0.0.0/0 md5"
-}
-
-trust_localnet() {
+  # trust connections from local network
   if [[ ${PG_TRUST_LOCALNET} == true ]]; then
     echo "Trusting connections from the local network..."
     set_hba_param "host all all samenet trust"
   fi
+
+  # allow remote connections to postgresql database
+  set_hba_param "host all all 0.0.0.0/0 md5"
 }
 
 set_resolvconf_perms() {
@@ -374,7 +373,6 @@ configure_postgresql() {
   initialize_database
   configure_recovery
   configure_ssl
-  trust_localnet
 
   # start postgres server internally for the creation of users and databases
   rm -rf ${PG_DATADIR}/postmaster.pid
