@@ -21,7 +21,7 @@
   - [Creating a backup](#creating-a-backup)
   - [Command-line arguments](#command-line-arguments)
   - [Logs](#logs)
-  - [UID/GID mapping](#uid-gid-mapping)
+  - [UID/GID mapping](#uidgid-mapping)
 - [Maintenance](#maintenance)
   - [Upgrading](#upgrading)
   - [Shell Access](#shell-access)
