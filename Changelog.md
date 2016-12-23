@@ -2,7 +2,11 @@
 
 **9.6**
 - postgresql: upgrade to 9.6
+<<<<<<< HEAD
 - upgrade baseimage to sameersbn/ubuntu:14.04.20170110
+=======
+- upgrade baseimage to sameersbn/ubuntu:14.04.20161217
+>>>>>>> 0418d90 (postgresql: upgrade to 9.6)
 
 **9.5**
 - postgresql: upgrade to 9.5

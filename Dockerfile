@@ -1,16 +1,7 @@
 FROM ubuntu:bionic-20200403 AS add-apt-repositories
 
-RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg \
- && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
- && echo 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main' >> /etc/apt/sources.list
-
-FROM ubuntu:bionic-20200403
-
-LABEL maintainer="sameer@damagehead.com"
-
-ENV PG_APP_HOME="/etc/docker-postgresql" \
-    PG_VERSION=12 \
+ENV PG_APP_HOME="/etc/docker-postgresql"\
+    PG_VERSION=9.6 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
