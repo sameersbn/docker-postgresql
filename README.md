@@ -3,8 +3,17 @@
 <<<<<<< HEAD
 # sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
 # sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+# sameersbn/postgresql:9.5-4
+=======
+# sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 
 - [Introduction](#introduction)
   - [Contributing](#contributing)
@@ -68,8 +77,17 @@ Automated builds of the image are available on [Dockerhub](https://hub.docker.co
 <<<<<<< HEAD
 docker pull sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
 docker pull sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+docker pull sameersbn/postgresql:9.5-4
+=======
+docker pull sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 Alternatively you can build the image yourself.
@@ -90,8 +108,17 @@ docker run --name postgresql -itd --restart always \
   sameersbn/postgresql:12-20200524
 =======
   --volume /srv/docker/postgresql:/var/lib/postgresql \
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 Login to the PostgreSQL server using:
@@ -125,8 +152,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 > **Note**
@@ -143,8 +179,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 
@@ -163,8 +208,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 > **Notes**
@@ -184,8 +238,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 By default databases are created by copying the standard system database named `template1`. You can specify a different template for your database using the `DB_TEMPLATE` parameter. Refer to [Template Databases](http://www.postgresql.org/docs/9.4/static/manage-ag-templatedbs.html) for further information.
@@ -200,8 +263,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 ## Granting user access to a database
@@ -215,8 +287,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 In the above example `dbuser` with be granted access to both the `dbname1` and `dbname2` databases.
@@ -231,8 +312,17 @@ docker run --name postgresql -itd \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 The above command enables the `unaccent` and `pg_trgm` modules on the databases listed in `DB_NAME`, namely `db1` and `db2`.
@@ -251,8 +341,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 > **Notes**
@@ -277,8 +376,17 @@ docker run --name postgresql-master -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 Notice that no additional arguments are specified while starting the master node of the cluster.
@@ -296,8 +404,17 @@ docker run --name postgresql-slave01 -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 *In the above command, we used docker links so that we can address the master node using the `master` alias in `REPLICATION_HOST`.*
@@ -332,8 +449,17 @@ docker run --name postgresql-snapshot -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 The difference between a slave and a snapshot is that a slave is read-only and updated whenever the master data is updated (streaming replication), while a snapshot is read-write and is not updated after the initial snapshot of the data from the master.
@@ -358,8 +484,17 @@ docker run --name postgresql-backup -it --rm \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 Once the backup is generated, the container will exit and the backup of the master data will be available at `/srv/docker/backups/postgresql.XXXXXXXXXXXX/`. Restoring the backup involves starting a container with the data in `/srv/docker/backups/postgresql.XXXXXXXXXXXX`.
@@ -373,8 +508,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524 -c log_connections=on
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6 -c log_connections=on
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4 -c log_connections=on
+=======
+  sameersbn/postgresql:9.6 -c log_connections=on
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 Please refer to the documentation of [postgres](http://www.postgresql.org/docs/9.4/static/app-postgres.html) for the complete list of available options.
@@ -388,8 +532,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524 -c logging_collector=on
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6 -c logging_collector=on
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4 -c logging_collector=on
+=======
+  sameersbn/postgresql:9.6 -c logging_collector=on
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 To access the PostgreSQL logs you can use `docker exec`. For example:
@@ -414,8 +567,17 @@ docker run --name postgresql -itd --restart always \
 <<<<<<< HEAD
   sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  sameersbn/postgresql:9.5-4
+=======
+  sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
 ```
 
 # Maintenance
@@ -430,8 +592,17 @@ To upgrade to newer releases:
 <<<<<<< HEAD
   docker pull sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
   docker pull sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+  docker pull sameersbn/postgresql:9.5-4
+=======
+  docker pull sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
   ```
 
   2. Stop the currently running image:
@@ -454,8 +625,17 @@ To upgrade to newer releases:
 <<<<<<< HEAD
     sameersbn/postgresql:12-20200524
 =======
+<<<<<<< HEAD
     sameersbn/postgresql:9.6
 >>>>>>> 0418d90 (postgresql: upgrade to 9.6)
+=======
+<<<<<<< HEAD
+    sameersbn/postgresql:9.5-4
+=======
+    sameersbn/postgresql:9.6
+>>>>>>> c0d1ae3 (postgresql: upgrade to 9.6)
+>>>>>>> 94f4115 (postgresql: upgrade to 9.6)
+>>>>>>> 4d591f6 (postgresql: upgrade to 9.6)
   ```
 
 ## Shell Access
