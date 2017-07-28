@@ -2,6 +2,7 @@
 set -e
 source ${PG_APP_HOME}/env-defaults
 
+PG_CONFDIR=/etc/postgresql/${PG_VERSION}/main
 PG_CONF=${PG_DATADIR}/postgresql.conf
 PG_HBA_CONF=${PG_DATADIR}/pg_hba.conf
 PG_IDENT_CONF=${PG_DATADIR}/pg_ident.conf
