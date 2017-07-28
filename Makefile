@@ -1,10 +1,12 @@
 all: build
 
 build:
-	@docker build --tag=fmartingr/postgres .
+	docker build --tag=fmartingr/postgres .
 
-release: build
-	@docker build --tag=fmartingr/postgres:$(shell cat VERSION) .
+release:
+	docker build --tag=fmartingr/postgres:$(shell cat VERSION) .
+	docker build --tag=fmartingr/postgres:latest .
+	docker push fmartingr/postgres
 
 test:
 	make build
