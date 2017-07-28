@@ -3,6 +3,7 @@ MAINTAINER me@fmartingr.com
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
+    PG_POSTGIS_VERSION=2.3 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
@@ -18,7 +19,11 @@ RUN apt-get -y update && apt-get -y install wget \
  && echo 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main' > /etc/apt/sources.list.d/pgdg.list \
  && apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y acl \
-      postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
+       # PostgreSQL
+       postgresql-${PG_VERSION} postgresql-client-${PG_VERSION} postgresql-contrib-${PG_VERSION} \
+       # PostGIS support
+       postgresql-contrib-${PG_VERSION} postgresql-${PG_VERSION}-postgis-${PG_POSTGIS_VERSION} \
+       postgresql-${PG_VERSION}-postgis-${PG_POSTGIS_VERSION}-scripts \
  && rm -rf ${PG_HOME} \
  && rm -rf /var/lib/apt/lists/* \
  && apt-get remove -y wget
