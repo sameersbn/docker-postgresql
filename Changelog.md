@@ -1,5 +1,10 @@
 # Changelog
 
+**9.6-3**
+- baseimage: now using ubuntu:14.04
+- Added postgis support
+- Split data and configuration directories
+
 **9.6**
 - postgresql: upgrade to 9.6
 - upgrade baseimage to sameersbn/ubuntu:14.04.20170110
