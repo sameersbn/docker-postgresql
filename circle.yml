@@ -8,6 +8,6 @@ dependencies:
 
 test:
   override:
-    - docker build -t sameersbn/postgresql .
-    - docker run -d --name=postgresql sameersbn/postgresql; sleep 10
-    - docker run -it --volumes-from=postgresql sameersbn/postgresql sudo -u postgres -H psql -c "\conninfo"
+    - docker build -t fmartingr/postgres .
+    - docker run -d --name=postgres fmartingr/postgres; sleep 10
+    - docker run -it --volumes-from=postgres fmartingr/postgres sudo -u postgres -H psql -c "\conninfo"
