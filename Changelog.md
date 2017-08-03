@@ -1,5 +1,8 @@
 # Changelog
 
+**9.6-4**
+- Added `DB_USER_FLAGS`
+
 **9.6-3**
 - baseimage: now using ubuntu:14.04
 - Added postgis support

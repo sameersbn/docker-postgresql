@@ -1,6 +1,6 @@
 PostgreSQL:
   restart: always
-  image: fmartingr/postgres:9.6-3
+  image: fmartingr/postgres:9.6-4
   ports:
     - "5432:5432"
   environment:
