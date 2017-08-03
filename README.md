@@ -142,6 +142,8 @@ docker run --name postgresql -itd --restart always \
   fmartingr/postgres:9.6-3
 ```
 
+By default, the user flag will only be `CREATEDB`, you can override this with the variable `DB_USER_FLAGS`.
+
 > **Notes**
 >
 > - The created user can login remotely
