@@ -1,5 +1,5 @@
 FROM ubuntu:14.04
-MAINTAINER me@fmartingr.com
+LABEL 'MAINTAINER' 'Felipe Martin <me@fmartingr.com>'
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
