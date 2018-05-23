@@ -8,6 +8,7 @@ dependencies:
 
 test:
   override:
-    - docker build -t sameersbn/postgresql .
-    - docker run -d --name=postgresql sameersbn/postgresql; sleep 10
-    - docker run -it --volumes-from=postgresql sameersbn/postgresql sudo -u postgres -H psql -c "\conninfo"
+    - docker build -t fmartingr/postgres .
+    - docker run -d --name=postgres -e DB_USER_FLAGS=SUPERUSER fmartingr/postgres; sleep 10
+    - docker run -it --volumes-from=postgres fmartingr/postgres sudo -u postgres -H psql -c "\conninfo"
+    - docker run -it --volumes-from=postgres fmartingr/postgres sudo -u postgres -H psql -c "SELECT pg_catalog.pg_user.usesuper FROM pg_catalog.pg_user WHERE pg_catalog.pg_user.usesuper = 't' ORDER BY usesysid DESC LIMIT 1"
