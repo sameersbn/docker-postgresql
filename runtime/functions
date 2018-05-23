@@ -298,7 +298,7 @@ create_user() {
         fi
         echo "Creating database user: ${DB_USER}"
         if [[ -z $(psql -U ${PG_USER} -Atc "SELECT 1 FROM pg_catalog.pg_user WHERE usename = '${DB_USER}'";) ]]; then
-          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" with ${DB_USER_FLAGS} LOGIN PASSWORD '${DB_PASS}';" >/dev/null
+          psql -U ${PG_USER} -c "CREATE ROLE \"${DB_USER}\" ${DB_USER_FLAGS} with LOGIN PASSWORD '${DB_PASS}';" >/dev/null
         fi
         ;;
     esac
@@ -383,6 +383,10 @@ configure_postgresql() {
   create_user
   create_database
   create_replication_user
+
+  if [[ "${DB_EXTENSION_TEMPLATE1}" == "y" ]]; then
+    load_extensions "template1"
+  fi
 
   # stop the postgres server
   exec_as_postgres ${PG_BINDIR}/pg_ctl -D ${PG_DATADIR} -w stop >/dev/null
