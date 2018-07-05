@@ -1,5 +1,9 @@
 FROM ubuntu:bionic-20200403 AS add-apt-repositories
 
+# Use UTF8 as the default DB encoding
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
     PG_USER=postgres \
