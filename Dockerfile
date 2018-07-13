@@ -10,7 +10,7 @@ FROM ubuntu:bionic-20180526
 LABEL maintainer="sameer@damagehead.com"
 
 ENV PG_APP_HOME="/etc/docker-postgresql" \
-    PG_VERSION=9.6 \
+    PG_VERSION=10 \
     PG_USER=postgres \
     PG_HOME=/var/lib/postgresql \
     PG_RUNDIR=/run/postgresql \
