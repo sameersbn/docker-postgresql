@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: docker:18.03.0-ce-git
         environment:
-          IMAGE_NAME: "sameersbn/postgresql"
+          IMAGE_NAME: "yassan/postgresql"
 
     steps:
       - checkout
