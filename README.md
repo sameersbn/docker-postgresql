@@ -77,7 +77,7 @@ Start PostgreSQL using:
 ```bash
 docker run --name postgresql -itd --restart always \
   --publish 5432:5432 \
-  --volume /srv/docker/postgresql:/var/lib/postgresql \
+  --volume postgresql:/var/lib/postgresql \
   sameersbn/postgresql:10-2
 ```
 
@@ -91,7 +91,7 @@ docker exec -it postgresql sudo -u postgres psql
 
 ## Persistence
 
-For PostgreSQL to preserve its state across container shutdown and startup you should mount a volume at `/var/lib/postgresql`.
+For PostgreSQL to preserve its state across container shutdown and startup you should mount a volume at `/var/lib/postgresql`. If you don't like the default volume destination then you can change it
 
 > *The [Quickstart](#quickstart) command already mounts a volume for persistence.*
 

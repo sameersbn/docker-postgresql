@@ -18,4 +18,4 @@ PostgreSQL:
     - REPLICATION_PASS=
     - REPLICATION_SSLMODE=
   volumes:
-    - /srv/docker/postgresql:/var/lib/postgresql
+    - postgresql:/var/lib/postgresql
