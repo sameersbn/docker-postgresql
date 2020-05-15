@@ -247,6 +247,7 @@ initialize_database() {
   # configure logging
   set_postgresql_param "log_directory" "${PG_LOGDIR}"
   set_postgresql_param "log_filename" "postgresql-${PG_VERSION}-main.log"
+  set_postgresql_param "logging_collector" "on"
 
   # trust connections from local network
   if [[ ${PG_TRUST_LOCALNET} == true ]]; then
