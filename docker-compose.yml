@@ -17,5 +17,6 @@ PostgreSQL:
     - REPLICATION_USER=
     - REPLICATION_PASS=
     - REPLICATION_SSLMODE=
+  command: "--wal_keep_segments=32 --logging_collector=off"
   volumes:
     - postgresql:/var/lib/postgresql
