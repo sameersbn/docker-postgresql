@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+shopt -s extglob
 source ${PG_APP_HOME}/env-defaults
 
 PG_CONF=${PG_DATADIR}/postgresql.conf
@@ -185,7 +186,7 @@ initialize_database() {
         ;;
       *)
         echo "Initializing database..."
-        PG_OLD_VERSION=$(find ${PG_HOME}/[0-9].[0-9]/main -maxdepth 1 -name PG_VERSION 2>/dev/null | grep -v $PG_VERSION | sort -r | head -n1 | cut -d'/' -f5)
+        PG_OLD_VERSION=$(find ${PG_HOME}/+([0-9])?(.[0-9])/main -maxdepth 1 -name PG_VERSION 2>/dev/null | grep -v $PG_VERSION | sort -r | head -n1 | cut -d'/' -f5)
         if [[ -n ${PG_OLD_VERSION} ]]; then
           echo "‣ Migrating PostgreSQL ${PG_OLD_VERSION} data to ${PG_VERSION}..."
 
