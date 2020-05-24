@@ -1,8 +1,13 @@
 FROM ubuntu:bionic-20200403 AS add-apt-repositories
 
-# Use UTF8 as the default DB encoding
-RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg \
+ && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+ && echo 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main' >> /etc/apt/sources.list
+
+FROM ubuntu:bionic-20200403
+
+LABEL maintainer="sameer@damagehead.com"
 
 ENV PG_APP_HOME="/etc/docker-postgresql"\
     PG_VERSION=9.6 \
