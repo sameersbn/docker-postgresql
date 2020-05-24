@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
-source ${PG_APP_HOME}/functions
+
+# shellcheck source=runtime/functions
+source "${PG_APP_HOME}/functions"
 
 [[ ${DEBUG} == true ]] && set -x
 
@@ -8,7 +10,7 @@ source ${PG_APP_HOME}/functions
 if [[ ${1:0:1} = '-' ]]; then
   EXTRA_ARGS="$@"
   set --
-elif [[ ${1} == postgres || ${1} == $(which postgres) ]]; then
+elif [[ ${1} == postgres || ${1} == $(command -v postgres) ]]; then
   EXTRA_ARGS="${@:2}"
   set --
 fi
@@ -27,8 +29,8 @@ if [[ -z ${1} ]]; then
   configure_postgresql
 
   echo "Starting PostgreSQL ${PG_VERSION}..."
-  exec start-stop-daemon --start --chuid ${PG_USER}:${PG_USER} \
-    --exec ${PG_BINDIR}/postgres -- -D ${PG_DATADIR} ${EXTRA_ARGS}
+  exec start-stop-daemon --start --chuid "${PG_USER}:${PG_USER}" \
+    --exec "${PG_BINDIR}/postgres" -- -D "${PG_DATADIR}" ${EXTRA_ARGS}
 else
   exec "$@"
 fi
