@@ -227,7 +227,7 @@ initialize_database() {
             -b ${PG_OLD_BINDIR} -B ${PG_BINDIR} \
             -d ${PG_OLD_DATADIR} -D ${PG_DATADIR} \
             -o "-c config_file=${PG_OLD_CONF} --hba_file=${PG_OLD_HBA_CONF} --ident_file=${PG_OLD_IDENT_CONF}" \
-            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}" >/dev/null
+            -O "-c config_file=${PG_CONF} --hba_file=${PG_HBA_CONF} --ident_file=${PG_IDENT_CONF}"
           echo
         fi
         ;;
