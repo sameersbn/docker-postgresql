@@ -13,6 +13,28 @@ exec_as_postgres() {
   sudo -HEu ${PG_USER} "$@"
 }
 
+create_crond() {
+# Provide POSTGRES_CRON_* via environment variable
+rm -rf /etc/cron.d/${PG_USER}
+for item in `env`; do
+   case "$item" in
+       POSTGRES_CRON*)
+            ENVVAR=`echo $item | cut -d \= -f 1`
+            printenv $ENVVAR >> /etc/cron.d/${PG_USER}
+            ;;
+   esac
+done
+
+if [ -f /etc/cron.d/${PG_USER} ]; then
+    sed -i "s/^session    required     pam_loginuid.so/#session    required     pam_loginuid.so/g" /etc/pam.d/cron
+    echo "Running cron(s)                                    "
+    echo "***************************************************"
+    cat /etc/cron.d/${PG_USER}
+    echo "***************************************************"
+    cron
+fi
+}
+
 map_uidgid() {
   USERMAP_ORIG_UID=$(id -u ${PG_USER})
   USERMAP_ORIG_GID=$(id -g ${PG_USER})
