@@ -28,9 +28,11 @@ map_uidgid() {
 create_datadir() {
   echo "Initializing datadir..."
   mkdir -p ${PG_HOME}
+  if [[ -f ${PG_DATADIR} ]]; then
+    chmod 0700 ${PG_DATADIR}
+  fi
   if [[ -d ${PG_DATADIR} ]]; then
-    chmod 0600 $( find ${PG_DATADIR} -type f )
-    chmod 0700 $( find ${PG_DATADIR} -type d )
+    chmod 0700 ${PG_DATADIR}
   fi
   chown -R ${PG_USER}:${PG_USER} ${PG_HOME}
 }
