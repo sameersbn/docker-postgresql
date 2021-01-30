@@ -254,7 +254,7 @@ configure_recovery() {
       # initialize standby.signal on the firstrun (slave only)
       exec_as_postgres touch ${PG_STANDBY_SIGNAL}
     fi
-    set_postgresql_param "primary_conninfo" "host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}"
+    set_postgresql_param "primary_conninfo" "host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}" "false"
   else
     # standby.signal can only exist on a slave node, its existence otherwise causes problems
     rm -rf ${PG_STANDBY_SIGNAL}
