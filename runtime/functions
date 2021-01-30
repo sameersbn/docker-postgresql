@@ -6,7 +6,7 @@ source ${PG_APP_HOME}/env-defaults
 PG_CONF=${PG_DATADIR}/postgresql.conf
 PG_HBA_CONF=${PG_DATADIR}/pg_hba.conf
 PG_IDENT_CONF=${PG_DATADIR}/pg_ident.conf
-PG_RECOVERY_CONF=${PG_DATADIR}/recovery.conf
+PG_STANDBY_SIGNAL=${PG_DATADIR}/standby.signal
 
 ## Execute command as PG_USER
 exec_as_postgres() {
@@ -72,22 +72,6 @@ set_postgresql_param() {
       fi
       value="$(echo "${value}" | sed 's|[&]|\\&|g')"
       exec_as_postgres sed -i "s|^[#]*[ ]*${key} = .*|${key} = '${value}'|" ${PG_CONF}
-    fi
-  fi
-}
-
-set_recovery_param() {
-  local key=${1}
-  local value=${2}
-  local hide=${3}
-  if [[ -n ${value} ]]; then
-    local current=$(exec_as_postgres sed -n -e "s/^\(.*\)\(${key}=\)\([^ ']*\)\(.*\)$/\3/p" ${PG_RECOVERY_CONF})
-    if [[ "${current}" != "${value}" ]]; then
-      case ${hide} in
-        true)  echo "‣ Setting primary_conninfo parameter: ${key}" ;;
-        *) echo "‣ Setting primary_conninfo parameter: ${key} = '${value}'" ;;
-      esac
-      exec_as_postgres sed -i "s|${key}=[^ ']*|${key}=${value}|" ${PG_RECOVERY_CONF}
     fi
   fi
 }
@@ -266,22 +250,14 @@ set_resolvconf_perms() {
 configure_recovery() {
   if [[ ${REPLICATION_MODE} == slave ]]; then
     echo "Configuring recovery..."
-    if [[ ! -f ${PG_RECOVERY_CONF} ]]; then
-      # initialize recovery.conf on the firstrun (slave only)
-      exec_as_postgres touch ${PG_RECOVERY_CONF}
-      ( echo "standby_mode = 'on'";
-        echo "primary_conninfo = 'host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}'";
-      ) > ${PG_RECOVERY_CONF}
-    else
-      set_recovery_param "host"      "${REPLICATION_HOST}"
-      set_recovery_param "port"      "${REPLICATION_PORT}"
-      set_recovery_param "user"      "${REPLICATION_USER}"
-      set_recovery_param "password"  "${REPLICATION_PASS}"    "true"
-      set_recovery_param "sslmode"   "${REPLICATION_SSLMODE}"
+    if [[ ! -f ${PG_STANDBY_SIGNAL} ]]; then
+      # initialize standby.signal on the firstrun (slave only)
+      exec_as_postgres touch ${PG_STANDBY_SIGNAL}
     fi
+    set_postgresql_param "primary_conninfo" "host=${REPLICATION_HOST} port=${REPLICATION_PORT} user=${REPLICATION_USER} password=${REPLICATION_PASS} sslmode=${REPLICATION_SSLMODE}" "false"
   else
-    # recovery.conf can only exist on a slave node, its existence otherwise causes problems
-    rm -rf ${PG_RECOVERY_CONF}
+    # standby.signal can only exist on a slave node, its existence otherwise causes problems
+    rm -rf ${PG_STANDBY_SIGNAL}
   fi
 }
 
