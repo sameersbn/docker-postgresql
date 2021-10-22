@@ -16,8 +16,8 @@ RUN \
 FROM base
 LABEL maintainer="Bojan Cekrlic <https://github.com/bokysan/postgresql>"
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="PostgreSQL 11.2 Kitchensink edition" \
-      org.label-schema.description="PostgreSQL 11.2 on Alphine linux, with lots of optional modules" \
+      org.label-schema.name="PostgreSQL 13.4 Kitchensink edition" \
+      org.label-schema.description="PostgreSQL 13.4 on Alphine linux, with lots of optional modules" \
       org.label-schema.url="https://github.com/bokysan/postgresql" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/bokysan/postgresql" \
@@ -25,7 +25,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.version="11.2-01" \
       org.label-schema.schema-version="1.0"
 
-ENV PG_VERSION=11.2
+ENV PG_VERSION=13.4
 ENV PG_APP_HOME="/etc/docker-postgresql" \
     PG_USER=postgres \
     PG_DATABASE=postgres \
@@ -84,30 +84,24 @@ RUN \
 	install -D -m644 /tmp/files/postgresql.confd /etc/conf.d/postgresql && \
 	install -D -m755 /tmp/files/pg-restore.initd /etc/init.d/pg-restore && \
 	install -D -m644 /tmp/files/pg-restore.confd /etc/conf.d/pg-restore && \
-    echo -e "\033[93m===== Cleaning up =====\033[0m" && \
+	echo -e "\033[93m===== Cleaning up =====\033[0m" && \
 	apk del .build-deps && \
-    (rm -rf /var/cache/apk/* > /dev/null || true) && (rm -rf /tmp/* > /dev/null || true) && \
-    (rm -rf /usr/src/postgresql /usr/local/share/doc /usr/local/share/man || true) && \
-    echo -e "\033[93m===== Preparing environment =====\033[0m" && \
+	(rm -rf /var/cache/apk/* > /dev/null || true) && (rm -rf /tmp/* > /dev/null || true) && \
+	(rm -rf /usr/src/postgresql /usr/local/share/doc /usr/local/share/man || true) && \
+	echo -e "\033[93m===== Preparing environment =====\033[0m" && \
 	mkdir /docker-entrypoint-initdb.d && \
-    mkdir -p ${PG_HOME}/wal-backup && chown -R ${PG_USER}:${PG_USER} ${PG_HOME}/wal-backup && \
-    rm -rf /tmp/files
+	mkdir -p ${PG_HOME}/wal-backup && chown -R ${PG_USER}:${PG_USER} ${PG_HOME}/wal-backup && \
+	rm -rf /tmp/files
 
 COPY runtime/ ${PG_APP_HOME}/
-
 COPY entrypoint.sh /sbin/entrypoint.sh
-
-RUN chmod 755 /sbin/entrypoint.sh
-
 COPY wal-backup.sh ${PG_HOME}/wal-backup.sh
+
 RUN \
-    chmod 755 /sbin/entrypoint.sh && \
-    chmod 755 ${PG_HOME}/wal-backup.sh
+	chmod 755 /sbin/entrypoint.sh && \
+	chmod 755 ${PG_HOME}/wal-backup.sh
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=6 CMD (netstat -an | grep :5432 | grep LISTEN && echo "SELECT 1" | psql -1 -Upostgres -v ON_ERROR_STOP=1 -hlocalhost postgres) || exit 1
-
 EXPOSE 5432/tcp
-
 WORKDIR ${PG_HOME}
-
 ENTRYPOINT ["/sbin/entrypoint.sh"]
