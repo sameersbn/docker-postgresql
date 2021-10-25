@@ -1,4 +1,15 @@
-#!/bin/bash
-# $IMAGE_NAME var is injected into the build so the tag is correct. 
-docker build --build-arg VCS_REF=`git rev-parse --short HEAD`  --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”`  -t $IMAGE_NAME .
+#!/bin/sh
+# $IMAGE_NAME var is injected into the build so the tag is correct.
+if test -z "$IMAGE_NAME"; then
+    IMAGE_NAME="boky/postgresql"
+fi
 
+if test -z "$PG_VERSION"; then
+    PG_VERSION="13.4"
+fi
+
+env BUILDKIT_PROGRESS=plain docker build \
+    --build-arg PG_VERSION="${PG_VERSION}" \
+    --build-arg VCS_REF=`git rev-parse --short HEAD` \
+    --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+    -t $IMAGE_NAME .
