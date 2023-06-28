@@ -1,11 +1,11 @@
-FROM ubuntu:bionic-20200403 AS add-apt-repositories
+FROM ubuntu:jammy-20230605 AS add-apt-repositories
 
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y wget gnupg \
  && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
- && echo 'deb http://apt.postgresql.org/pub/repos/apt/ bionic-pgdg main' >> /etc/apt/sources.list
+ && echo 'deb http://apt.postgresql.org/pub/repos/apt/ jammy-pgdg main' >> /etc/apt/sources.list
 
-FROM ubuntu:bionic-20200403
+FROM ubuntu:jammy-20230605
 
 LABEL maintainer="sameer@damagehead.com"
 
