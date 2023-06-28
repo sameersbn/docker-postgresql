@@ -5,7 +5,7 @@ on:
     branches:
       - master
     tags:
-      - 'v*.*.*'
+      - 'v(.*)'
   pull_request:
     branches:
       - master
@@ -32,8 +32,8 @@ jobs:
             quay.io/sameersbn/postgresql
             ghcr.io/sameersbn/postgresql
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=match,pattern=\d
+            type=match,pattern=(.*)
             latest
 
       - name: Set up Docker Buildx
