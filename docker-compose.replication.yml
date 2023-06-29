@@ -1,0 +1,57 @@
+version: "3.7"
+
+services:
+
+  master-db:
+    restart: always
+    container_name: master-db
+    build: .
+    ports:
+      - 5432:5432
+    environment:
+      - DEBUG=true
+
+      - DB_USER=dbuser
+      - DB_PASS=dbuserpass
+      - DB_NAME=dbname
+      - DB_TEMPLATE=
+
+      - DB_EXTENSION=
+
+      - REPLICATION_MODE=
+      - REPLICATION_USER=repluser
+      - REPLICATION_PASS=repluserpass
+      - REPLICATION_SSLMODE=
+    # command: "--wal_keep_segments=32 --logging_collector=off"
+    volumes:
+      - ./postgresql-master:/var/lib/postgresql
+
+  slave-db:
+    restart: always
+    container_name: slave-db
+    build: .
+    ports:
+      - 9432:5432
+    depends_on:
+      - master-db
+    links:
+      - master-db
+    environment:
+      - DEBUG=true
+
+      - DB_USER=
+      - DB_PASS=
+      - DB_NAME=
+      - DB_TEMPLATE=
+
+      - DB_EXTENSION=
+
+      - REPLICATION_MODE=slave
+      - REPLICATION_HOST=master-db
+      - REPLICATION_PORT=5432
+      - REPLICATION_USER=repluser
+      - REPLICATION_PASS=repluserpass
+      - REPLICATION_SSLMODE=prefer
+    # command: "--wal_keep_segments=32 --logging_collector=off"
+    volumes:
+      - ./postgresql-slave:/var/lib/postgresql
