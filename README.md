@@ -327,6 +327,18 @@ To access the PostgreSQL logs you can use `docker exec`. For example:
 docker exec -it postgresql tail -f /var/log/postgresql/postgresql-9.4-main.log
 ```
 
+## Cron
+
+To schedule cron jobs in the container add variables named `POSTGRES_CRON_X` :
+
+```bash
+docker run --name postgresql -itd --restart always \
+  --publish 5432:5432 \
+  --volume /srv/docker/postgresql:/var/lib/postgresql \
+  --env "POSTGRES_CRON_1=* * * * * postgres date >> /tmp/crond.log 2>&1"
+  sameersbn/postgresql:9.5-2
+```
+
 # UID/GID mapping
 
 The files and processes created by the container are owned by the `postgres` user that is internal to the container. In the absense of user namespace in docker the UID and GID of the containers `postgres` user may have different meaning on the host.
